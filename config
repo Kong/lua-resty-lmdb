@@ -1,8 +1,11 @@
 ngx_module_type=CORE
-ngx_module_name=ngx_lua_lmdb_module
-ngx_module_srcs="$ngx_addon_dir/src/ngx_lua_lmdb_module.c"
-ngx_module_incs="$ngx_addon_dir/src"
+ngx_module_name=ngx_lua_resty_lmdb_module
+ngx_module_srcs="$ngx_addon_dir/src/ngx_lua_resty_lmdb_module.c $ngx_addon_dir/src/ngx_lua_resty_lmdb_transaction.c"
+ngx_module_incs="$ngx_addon_dir/lmdb/libraries/liblmdb $ngx_addon_dir/src"
 
 . auto/module
+
+LINK_DEPS="$LINK_DEPS $ngx_addon_dir/lmdb/libraries/liblmdb/liblmdb.a"
+CORE_LIBS="$CORE_LIBS $ngx_addon_dir/lmdb/libraries/liblmdb/liblmdb.a"
 
 ngx_addon_name=$ngx_module_name
