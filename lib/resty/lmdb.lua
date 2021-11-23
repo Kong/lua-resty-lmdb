@@ -46,7 +46,6 @@ local C = ffi.C
 local ffi_string = ffi.string
 local ffi_new = ffi.new
 local ffi_cast = ffi.cast
-local table_new = require("table.new")
 local MIN_OPS_N = 16
 local DEFAULT_VALUE_BUF_SIZE = 4096
 local NGX_ERROR = ngx.ERROR
@@ -59,10 +58,6 @@ _TXN_MT.__index = _TXN_MT
 local CACHED_DBI = {}
 local MDB_CREATE = 0x40000
 local DEFAULT_DB = "_default"
-
-
-local function get_ops_array(len)
-end
 
 
 function _TXN_MT:reset()
@@ -110,8 +105,8 @@ function _TXN_MT:db_open(db, create)
 
     self[n] = {
         opcode = "DB_OPEN",
-		db = db or DEFAULT_DB,
-		flags = create and MDB_CREATE or 0,
+        db = db or DEFAULT_DB,
+        flags = create and MDB_CREATE or 0,
     }
 
     self.n = n
@@ -252,7 +247,11 @@ function _TXN_MT:commit(txn)
         elseif cop.opcode == C.NGX_LMDB_OP_DB_DROP then
             -- remove cached DBi
             lop.result = true
-            CACHED_DBI[lop.db] = nil
+
+            if lop.flags then
+                -- delete == true
+                CACHED_DBI[lop.db] = nil
+            end
         end
     end
 
