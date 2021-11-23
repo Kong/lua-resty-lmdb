@@ -61,9 +61,10 @@ do
     function _M.begin(hint)
         hint = hint or 4
 
-        local txn = table_new(hint, 3)
+        local txn = table_new(hint, 5)
 
         txn.n = 0
+        txn.capacity = 0
         txn.write = false
         txn.ops_capacity = 0
         txn.ops = nil
@@ -99,39 +100,41 @@ end
 
 
 function _TXN_MT:reset()
-    table_clear(self)
-
     self.n = 0
     self.write = false
-    self.ops_capacity = 0
-    self.ops = nil
+end
+
+
+function _TXN_MT:_new_op()
+    local n = self.n + 1
+    self.n = n
+
+    if n < self.capacity then
+        return self[n]
+    end
+
+    local op = table_new(0, 4)
+    self[n] = op
+
+    return op
 end
 
 
 function _TXN_MT:get(key, db)
-    local n = self.n + 1
-
-    self[n] = {
-        opcode = "GET",
-        key = key,
-        db = db or DEFAULT_DB,
-    }
-
-    self.n = n
+    local op = self:_new_op()
+    op.opcode = "GET"
+    op.key = key
+    op.db = db or DEFAULT_DB
 end
 
 
 function _TXN_MT:set(key, value, db)
-    local n = self.n + 1
+    local op = self:_new_op()
+    op.opcode = "SET"
+    op.key = key
+    op.value = value
+    op.db = db or DEFAULT_DB
 
-    self[n] = {
-        opcode = "SET",
-        key = key,
-        value = value,
-        db = db or DEFAULT_DB,
-    }
-
-    self.n = n
     self.write = true
 end
 
@@ -139,15 +142,11 @@ end
 function _TXN_MT:db_open(db, create)
     assert(type(create) == "boolean")
 
-    local n = self.n + 1
+    local op = self:_new_op()
+    op.opcode = "DB_OPEN"
+    op.db = db or DEFAULT_DB
+    op.flags = create and MDB_CREATE or 0
 
-    self[n] = {
-        opcode = "DB_OPEN",
-        db = db or DEFAULT_DB,
-        flags = create and MDB_CREATE or 0,
-    }
-
-    self.n = n
     self.write = create
 end
 
@@ -155,15 +154,12 @@ end
 function _TXN_MT:db_drop(db, delete)
     assert(type(delete) == "boolean")
 
-    local n = self.n + 1
+    local op = self:_new_op()
 
-    self[n] = {
-        opcode = "DB_DROP",
-		db = db or DEFAULT_DB,
-        flags = delete,
-    }
+    op.opcode = "DB_DROP"
+    op.db = db or DEFAULT_DB
+    op.flags = delete
 
-    self.n = n
     self.write = true
 end
 
