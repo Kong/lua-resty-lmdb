@@ -10,7 +10,7 @@ plan tests => repeat_each() * blocks() * 5;
 my $pwd = cwd();
 
 our $MainConfig = qq{
-    lmdb_environment /tmp/test.mdb;
+    lmdb_environment_path /tmp/test.mdb;
 };
 
 our $HttpConfig = qq{

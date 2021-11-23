@@ -10,9 +10,9 @@ static void ngx_lua_resty_lmdb_exit_worker(ngx_cycle_t *cycle);
 
 static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
 
-    { ngx_string("lmdb_environment"),
+    { ngx_string("lmdb_environment_path"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
-      ngx_conf_set_str_slot,
+      ngx_conf_set_path_slot,
       0,
       offsetof(ngx_lua_resty_lmdb_conf_t, env_path),
       NULL },
@@ -64,7 +64,7 @@ ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle)
     /*
      * set by ngx_pcalloc():
      *
-     *     conf->env_path = { 0, NULL };
+     *     conf->env_path = NULL;
      *     conf->env = NULL;
      */
 
@@ -87,22 +87,10 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 
 
 static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle) {
-    ngx_lua_resty_lmdb_conf_t *lcf;
+    /* ngx_lua_resty_lmdb_conf_t *lcf;
 
     lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
-                                                     ngx_lua_resty_lmdb_module);
-
-    if (lcf == NULL || lcf->env_path.data == NULL) {
-        return NGX_OK;
-    }
-
-    ngx_log_debug1(NGX_LOG_DEBUG_CORE, cycle->log, 0, "LMDB path is: %V", &lcf->env_path);
-
-    if (ngx_create_full_path(lcf->env_path.data, 0755) != NGX_OK) {
-        ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                      "unable to create LMDB directory: %V", &lcf->env_path);
-        return NGX_ERROR;
-    }
+                                                     ngx_lua_resty_lmdb_module); */
 
     return NGX_OK;
 }
@@ -116,7 +104,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
     lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
                                                      ngx_lua_resty_lmdb_module);
 
-    if (lcf == NULL || lcf->env_path.data == NULL) {
+    if (lcf == NULL || lcf->env_path == NULL) {
         return NGX_OK;
     }
 
@@ -134,7 +122,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         return NGX_ERROR;
     }
 
-    rc = mdb_env_open(lcf->env, (const char *) lcf->env_path.data, 0, 0644);
+    rc = mdb_env_open(lcf->env, (const char *) lcf->env_path->name.data, 0, 0600);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                       "unable to open LMDB environment: %s", mdb_strerror(rc));
@@ -161,7 +149,7 @@ static void ngx_lua_resty_lmdb_exit_worker(ngx_cycle_t *cycle)
     lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
                                                      ngx_lua_resty_lmdb_module);
 
-    if (lcf == NULL || lcf->env_path.data == NULL) {
+    if (lcf == NULL || lcf->env_path->name.data == NULL) {
         return;
     }
 
