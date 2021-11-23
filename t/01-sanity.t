@@ -34,6 +34,7 @@ __DATA__
 
             ngx.say(l.set("test", "value"))
             ngx.say(l.get("test"))
+            ngx.say(l.get("test_not_exist"))
         }
     }
 --- request
@@ -41,6 +42,7 @@ GET /t
 --- response_body
 true
 value
+nil
 --- no_error_log
 [error]
 [warn]
@@ -93,6 +95,34 @@ GET /t
 true
 true
 nil
+--- no_error_log
+[error]
+[warn]
+[crit]
+
+
+
+=== TEST 4: db_drop(delete = true)
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            ngx.say(l.set("test", "value"))
+            ngx.say(l.db_drop(true))
+            ngx.say(l.db_drop(true))
+            ngx.say(l.get("test"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+true
+nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
+nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
 --- no_error_log
 [error]
 [warn]

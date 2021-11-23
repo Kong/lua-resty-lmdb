@@ -32,11 +32,11 @@ do
     end
 
 
-    function _M.db_drop(db, delete)
+    function _M.db_drop(delete, db)
         delete = not not delete
 
         CACHED_TXN:reset()
-        CACHED_TXN:db_drop(db, delete)
+        CACHED_TXN:db_drop(delete, db)
         local res, err = CACHED_TXN:commit()
         if not res then
             return nil, err

@@ -99,9 +99,12 @@ int ngx_lua_resty_lmdb_ffi_execute(ngx_lua_resty_lmdb_operation_t *ops,
                 break;
 
             case NGX_LMDB_OP_DB_OPEN:
-                if (ops[i].flags & MDB_CREATE) {
-                    ngx_lua_resty_lmdb_assert(need_write);
-                }
+                /*
+                 * write access is always required no matter
+                 * the database already exists or not because the dbi has to be
+                 * written into the shared map
+                 */
+                ngx_lua_resty_lmdb_assert(need_write);
 
                 rc = mdb_dbi_open(txn, (const char *) ops[i].key.data,
                                   ops[i].flags, &ops[i].dbi);

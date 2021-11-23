@@ -35,6 +35,7 @@ int ngx_lua_resty_lmdb_ffi_execute(ngx_lua_resty_lmdb_operation_t *ops,
 
 local err_ptr = base.get_errmsg_ptr()
 local get_string_buf = base.get_string_buf
+local get_string_buf_size = base.get_string_buf_size
 local setmetatable = setmetatable
 local assert = assert
 local math_max = math.max
@@ -43,7 +44,8 @@ local C = ffi.C
 local ffi_string = ffi.string
 local ffi_new = ffi.new
 local MIN_OPS_N = 16
-local DEFAULT_VALUE_BUF_SIZE = 4096
+local DEFAULT_VALUE_BUF_SIZE = 16 * 1024 -- 16KB
+base.set_string_buf_size(DEFAULT_VALUE_BUF_SIZE)
 local NGX_ERROR = ngx.ERROR
 local NGX_AGAIN = ngx.AGAIN
 local NGX_OK = ngx.OK
@@ -74,16 +76,15 @@ do
 
 
     local CACHED_TXN_DBI = _M.begin(1)
-    function _M.get_dbi(db, create)
-        create = not not create
-
+    function _M.get_dbi(create, db)
         local dbi = CACHED_DBI[db]
         if dbi then
+            print("cached: ", dbi)
             return dbi
         end
 
         CACHED_TXN_DBI:reset()
-        CACHED_TXN_DBI:db_open(db, create)
+        CACHED_TXN_DBI:db_open(create, db)
         local res, err = CACHED_TXN_DBI:commit()
         if not res then
             return nil, err
@@ -115,6 +116,7 @@ function _TXN_MT:_new_op()
 
     local op = table_new(0, 4)
     self[n] = op
+    self.capacity = self.n
 
     return op
 end
@@ -134,12 +136,13 @@ function _TXN_MT:set(key, value, db)
     op.key = key
     op.value = value
     op.db = db or DEFAULT_DB
+    op.flags = 0
 
     self.write = true
 end
 
 
-function _TXN_MT:db_open(db, create)
+function _TXN_MT:db_open(create, db)
     assert(type(create) == "boolean")
 
     local op = self:_new_op()
@@ -147,11 +150,11 @@ function _TXN_MT:db_open(db, create)
     op.db = db or DEFAULT_DB
     op.flags = create and MDB_CREATE or 0
 
-    self.write = create
+    self.write = true
 end
 
 
-function _TXN_MT:db_drop(db, delete)
+function _TXN_MT:db_drop(delete, db)
     assert(type(delete) == "boolean")
 
     local op = self:_new_op()
@@ -165,7 +168,7 @@ end
 
 
 function _TXN_MT:commit()
-    local value_buf_size = DEFAULT_VALUE_BUF_SIZE
+    local value_buf_size = get_string_buf_size()
     local ops
 
     if self.ops_capacity >= self.n then
@@ -182,7 +185,7 @@ function _TXN_MT:commit()
         local cop = ops[i - 1]
 
         if lop.opcode == "GET" then
-            local dbi, err = get_dbi(lop.db)
+            local dbi, err = get_dbi(false, lop.db)
             if err then
                 return nil, "unable to open DB for access: " .. err
 
@@ -196,7 +199,7 @@ function _TXN_MT:commit()
             cop.dbi = dbi
 
         elseif lop.opcode == "SET" then
-            local dbi, err = get_dbi(lop.db, true)
+            local dbi, err = get_dbi(true, lop.db)
             if err then
                 return nil, "unable to open DB for access: " .. err
 
@@ -217,6 +220,7 @@ function _TXN_MT:commit()
                 val.len = #lop.value
             end
             cop.dbi = dbi
+            cop.flags = lop.flags
 
         elseif lop.opcode == "DB_OPEN" then
             cop.opcode = C.NGX_LMDB_OP_DB_OPEN
@@ -225,7 +229,7 @@ function _TXN_MT:commit()
             cop.flags = lop.flags
 
         elseif lop.opcode == "DB_DROP" then
-            local dbi, err = get_dbi(lop.db, false)
+            local dbi, err = get_dbi(false, lop.db)
             if err then
                 return nil, "unable to open DB for access: " .. err
 
