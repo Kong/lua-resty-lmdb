@@ -110,13 +110,11 @@ function _TXN_MT:_new_op()
     local n = self.n + 1
     self.n = n
 
-    if n < self.capacity then
-        return self[n]
+    local op = self[n]
+    if not op then
+        op = table_new(0, 4)
+        self[n] = op
     end
-
-    local op = table_new(0, 4)
-    self[n] = op
-    self.capacity = self.n
 
     return op
 end
