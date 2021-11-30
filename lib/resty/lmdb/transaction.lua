@@ -58,22 +58,22 @@ local MDB_CREATE = 0x40000
 local DEFAULT_DB = "_default"
 
 
+function _M.begin(hint)
+    hint = hint or 4
+
+    local txn = table_new(hint, 4)
+
+    txn.n = 0
+    txn.write = false
+    txn.ops_capacity = 0
+    txn.ops = nil
+
+    return setmetatable(txn, _TXN_MT)
+end
+
+
 local get_dbi
 do
-    function _M.begin(hint)
-        hint = hint or 4
-
-        local txn = table_new(hint, 4)
-
-        txn.n = 0
-        txn.write = false
-        txn.ops_capacity = 0
-        txn.ops = nil
-
-        return setmetatable(txn, _TXN_MT)
-    end
-
-
     local CACHED_TXN_DBI = _M.begin(1)
     function _M.get_dbi(create, db)
         local dbi = CACHED_DBI[db]
