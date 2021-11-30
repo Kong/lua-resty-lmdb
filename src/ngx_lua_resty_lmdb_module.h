@@ -45,7 +45,7 @@ extern ngx_module_t ngx_lua_resty_lmdb_module;
 #include <assert.h>
 #   define ngx_lua_resty_lmdb_assert(a)  assert(a)
 #else
-#   define ngx_lua_resty_lmdb_lua_assert(a)
+#   define ngx_lua_resty_lmdb_assert(a)
 #endif
 
 
