@@ -63,10 +63,9 @@ do
     function _M.begin(hint)
         hint = hint or 4
 
-        local txn = table_new(hint, 5)
+        local txn = table_new(hint, 4)
 
         txn.n = 0
-        txn.capacity = 0
         txn.write = false
         txn.ops_capacity = 0
         txn.ops = nil
