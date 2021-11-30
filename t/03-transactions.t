@@ -43,7 +43,6 @@ __DATA__
             t:set("test", nil)
             t:get("test")
             assert(t.n == 5)
-            assert(t.capacity == 5)
             assert(t.write == true)
             ngx.say(t:commit())
             assert(t.ops_capacity == 16)
