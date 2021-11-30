@@ -4,7 +4,6 @@ local _M = {}
 local ffi = require("ffi")
 local base = require("resty.core.base")
 local table_new = require("table.new")
-local table_clear = require("table.clear")
 
 
 ffi.cdef([[
