@@ -11,6 +11,7 @@ my $pwd = cwd();
 
 our $MainConfig = qq{
     lmdb_environment_path /tmp/test.mdb;
+    lmdb_map_size 5m;
 };
 
 our $HttpConfig = qq{

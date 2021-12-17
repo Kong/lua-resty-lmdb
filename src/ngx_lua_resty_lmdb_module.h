@@ -10,6 +10,7 @@
 struct ngx_lua_resty_lmdb_conf_s {
     ngx_path_t  *env_path;
     size_t       max_databases;
+    size_t       map_size;
     MDB_env     *env;
     MDB_txn     *ro_txn;
 };

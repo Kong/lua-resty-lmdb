@@ -24,6 +24,13 @@ static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
       offsetof(ngx_lua_resty_lmdb_conf_t, max_databases),
       NULL },
 
+    { ngx_string("lmdb_map_size"),
+      NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_size_slot,
+      0,
+      offsetof(ngx_lua_resty_lmdb_conf_t, map_size),
+      NULL },
+
       ngx_null_command
 };
 
@@ -69,6 +76,7 @@ ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle)
      */
 
     lcf->max_databases = NGX_CONF_UNSET_SIZE;
+    lcf->map_size = NGX_CONF_UNSET_SIZE;
 
     return lcf;
 }
@@ -80,6 +88,8 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     ngx_lua_resty_lmdb_conf_t *lcf = conf;
 
     ngx_conf_init_size_value(lcf->max_databases, 1);
+    /* same as mdb.c DEFAULT_MAPSIZE */
+    ngx_conf_init_size_value(lcf->map_size, 1048576);
 
     return NGX_CONF_OK;
 }
@@ -112,6 +122,13 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                       "unable to create LMDB environment");
+        return NGX_ERROR;
+    }
+
+    rc = mdb_env_set_mapsize(lcf->env, lcf->map_size);
+    if (rc != 0) {
+        ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                      "unable to set map size for LMDB");
         return NGX_ERROR;
     }
 
