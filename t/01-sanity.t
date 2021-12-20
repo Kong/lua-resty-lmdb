@@ -127,3 +127,20 @@ nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
 [error]
 [warn]
 [crit]
+
+=== TEST 5: works fine when not enabled
+--- http_config eval: $::HttpConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            ngx.say("good")
+        }
+    }
+--- request
+GET /t
+--- response_body
+good
+--- no_error_log
+[error]
+[warn]
+[crit]
