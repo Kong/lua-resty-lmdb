@@ -149,7 +149,7 @@ static void ngx_lua_resty_lmdb_exit_worker(ngx_cycle_t *cycle)
     lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
                                                      ngx_lua_resty_lmdb_module);
 
-    if (lcf == NULL || lcf->env_path->name.data == NULL) {
+    if (lcf == NULL || lcf->env_path == NULL) {
         return;
     }
 
