@@ -77,7 +77,6 @@ do
     function _M.get_dbi(create, db)
         local dbi = CACHED_DBI[db]
         if dbi then
-            print("cached: ", dbi)
             return dbi
         end
 
