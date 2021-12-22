@@ -13,3 +13,4 @@ all: ;
 install: all
 	$(INSTALL) -d $(DESTDIR)$(LUA_LIB_DIR)/resty/lmdb/
 	$(INSTALL) -m 664 lib/resty/lmdb/*.lua $(DESTDIR)$(LUA_LIB_DIR)/resty/lmdb/
+	$(INSTALL) -m 664 lib/resty/lmdb.lua $(DESTDIR)$(LUA_LIB_DIR)/resty/
