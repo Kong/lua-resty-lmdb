@@ -95,7 +95,7 @@ returned by `transaction.begin()`.
 
 #### get
 
-**syntax:** *txn:get(key, db)*
+**syntax:** *txn:get(key, db?)*
 
 **context:** *any context*
 
