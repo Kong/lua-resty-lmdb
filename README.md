@@ -123,7 +123,7 @@ fields:
 
 #### db\_open
 
-**syntax:** *txn:db_open(create, db)*
+**syntax:** *txn:db_open(create, db?)*
 
 **context:** *any context*
 
