@@ -113,7 +113,8 @@ fields:
 
 **context:** *any context*
 
-Appends a `set` operation in the transactions table. The output able contains the following
+Appends a `set` operation in the transactions table. If `db` is omitted,
+it defaults to `"_default"`. The output able contains the following
 fields:
 
 * `result`: Always `true` for successful transaction commits
