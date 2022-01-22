@@ -18,6 +18,19 @@ our $HttpConfig = qq{
     lua_package_path "$pwd/lib/?.lua;;";
 };
 
+our $HttpConfigWithInit = qq{
+    lua_package_path "$pwd/lib/?.lua;;";
+
+    init_by_lua_block {
+        local l = require("resty.lmdb")
+
+        local res, err = l.set("test", "value")
+
+        package.loaded.res = res
+        package.loaded.err = err
+    }
+};
+
 no_long_string();
 #no_diff();
 
@@ -129,6 +142,8 @@ nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
 [warn]
 [crit]
 
+
+
 === TEST 5: works fine when not enabled
 --- http_config eval: $::HttpConfig
 --- config
@@ -141,6 +156,28 @@ nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
 GET /t
 --- response_body
 good
+--- no_error_log
+[error]
+[warn]
+[crit]
+
+
+
+=== TEST 6: does not crash when called in init_by_lua
+--- http_config eval: $::HttpConfigWithInit
+--- main_config eval: $::MainConfig
+--- config
+    location /t {
+        content_by_lua_block {
+            ngx.say(package.loaded.res)
+            ngx.say(package.loaded.err)
+        }
+    }
+--- request
+GET /t
+--- response_body
+nil
+unable to open DB for access: no LMDB environment defined
 --- no_error_log
 [error]
 [warn]

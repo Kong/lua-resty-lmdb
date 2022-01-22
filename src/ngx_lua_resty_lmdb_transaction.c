@@ -14,7 +14,7 @@ int ngx_lua_resty_lmdb_ffi_execute(ngx_lua_resty_lmdb_operation_t *ops,
     lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(ngx_cycle->conf_ctx,
                                                      ngx_lua_resty_lmdb_module);
 
-    if (lcf == NULL || lcf->env_path == NULL) {
+    if (lcf == NULL || lcf->env == NULL) {
         *err = "no LMDB environment defined";
         return NGX_ERROR;
     }
