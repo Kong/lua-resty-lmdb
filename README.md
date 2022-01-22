@@ -109,7 +109,7 @@ fields:
 
 #### set
 
-**syntax:** *txn:set(key, value, db)*
+**syntax:** *txn:set(key, value, db?)*
 
 **context:** *any context*
 
