@@ -99,7 +99,8 @@ returned by `transaction.begin()`.
 
 **context:** *any context*
 
-Appends a `get` operation in the transactions table. The output table contains the following
+Appends a `get` operation in the transactions table. If `db` is omitted,
+it defaults to `"_default"`. The output table contains the following
 fields:
 
 * `value`: Value for `key`, or `nil` if `key` is not found
