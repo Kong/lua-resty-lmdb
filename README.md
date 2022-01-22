@@ -59,7 +59,7 @@ In case of error, `nil` and a string describing the error will be returned inste
 
 ### db\_drop
 
-**syntax:** *value, err = lmdb.db_drop(delele?, db?)*
+**syntax:** *ok, err = lmdb.db_drop(delele?, db?)*
 
 **context:** *any context **except** init_by_lua&#42;*
 
