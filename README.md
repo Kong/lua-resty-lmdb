@@ -76,8 +76,8 @@ In case of error, `nil` and a string describing the error will be returned inste
 **context:** *any context*
 
 Creates a new LMDB transaction object. This does not actually starts the transaction, but only creates
-a Lua table that stores the transactions for execution later. If `hint` is provided then the Lua table holding
-the transactions will be pre-allocated to store `hint` transactions.
+a Lua table that stores the operations for execution later. If `hint` is provided then the Lua table holding
+the operations will be pre-allocated to store `hint` operations.
 
 [Back to TOC](#table-of-contents)
 
@@ -88,7 +88,7 @@ the transactions will be pre-allocated to store `hint` transactions.
 **context:** *any context*
 
 Resets a transaction object. Removes all existing transactions and results (if any) from the object but
-keeps the table's capacity. After this call the transaction can be reused as if it is a new transaction
+keeps the table's capacity. After this call the transaction can be reused as if it was a new transaction
 returned by `transaction.begin()`.
 
 [Back to TOC](#table-of-contents)
