@@ -44,7 +44,7 @@ In case of error, `nil` and a string describing the error will be returned inste
 
 #### set
 
-**syntax:** *value, err = lmdb.set(key, value, db?)*
+**syntax:** *ok, err = lmdb.set(key, value, db?)*
 
 **context:** *any context **except** init_by_lua&#42;*
 
