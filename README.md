@@ -134,7 +134,7 @@ in case of successful transaction commits.
 
 #### db\_drop
 
-**syntax:** *txn:db_drop(delete, db)*
+**syntax:** *txn:db_drop(delete, db?)*
 
 **context:** *any context*
 
