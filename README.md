@@ -127,7 +127,8 @@ fields:
 
 **context:** *any context*
 
-Appends a `db_open` operation in the transactions table. This operation does not return anything
+Appends a `db_open` operation in the transactions table. If `db` is omitted,
+it defaults to `"_default"`. This operation does not return anything
 in case of successful transaction commits.
 
 [Back to TOC](#table-of-contents)
