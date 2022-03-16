@@ -5,10 +5,12 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <lmdb.h>
+#include <chacha8.h>
 
 
 struct ngx_lua_resty_lmdb_conf_s {
     ngx_path_t  *env_path;
+    ngx_path_t  *key_file;
     size_t       max_databases;
     size_t       map_size;
     MDB_env     *env;
