@@ -167,9 +167,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         }
 
         char   key[32];
-        size_t bytes_read;
-
-        bytes_read = fread(key, sizeof(char), 32, fp);
+        fread(key, sizeof(char), 32, fp);
 
         fclose(fp);
 
