@@ -93,7 +93,7 @@ ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle)
     lcf->max_databases = NGX_CONF_UNSET_SIZE;
     lcf->map_size = NGX_CONF_UNSET_SIZE;
     // lcf->key_file.data = "12345678900987654321123456789009";
-    lcf->key_file.len =  NGX_CONF_UNSET_SIZE;
+    //lcf->key_file.len =  NGX_CONF_UNSET_SIZE;
     return lcf;
 }
 
@@ -106,7 +106,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     ngx_conf_init_size_value(lcf->max_databases, 1);
     /* same as mdb.c DEFAULT_MAPSIZE */
     ngx_conf_init_size_value(lcf->map_size, 1048576);
-    ngx_conf_init_value(lcf->key_file.data, "12345678900987654321123456789009");
+    //ngx_conf_init_value(lcf->key_file.data, "12345678900987654321123456789009");
 
     return NGX_CONF_OK;
 }
@@ -196,9 +196,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
 
     if (lcf->key_file.data) {
 
-        char key[100];
-        memset(key, '\0', sizeof(key));
-        strncpy(key, lcf->key_file.data,sizeof(char)*32);
+        char *key = lcf->key_file.data;
 
         MDB_val enckey;
         enckey.mv_data = &key[0];
