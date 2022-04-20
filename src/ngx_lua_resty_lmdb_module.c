@@ -123,17 +123,17 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle) {
 
 static EVP_CIPHER *cipher;
 
-static int mcf_str2key(const char *passwd, MDB_val *key)
-{
-	unsigned int size;
-	EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
-	EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
-	EVP_DigestUpdate(mdctx, "Just a Constant", sizeof("Just a Constant"));
-	EVP_DigestUpdate(mdctx, passwd, strlen(passwd));
-	EVP_DigestFinal_ex(mdctx, key->mv_data, &size);
-	EVP_MD_CTX_free(mdctx);
-	return 0;
-}
+// static int mcf_str2key(const char *passwd, MDB_val *key)
+// {
+// 	unsigned int size;
+// 	EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
+// 	EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
+// 	EVP_DigestUpdate(mdctx, "Just a Constant", sizeof("Just a Constant"));
+// 	EVP_DigestUpdate(mdctx, passwd, strlen(passwd));
+// 	EVP_DigestFinal_ex(mdctx, key->mv_data, &size);
+// 	EVP_MD_CTX_free(mdctx);
+// 	return 0;
+// }
 
 static int lmcf_encfunc(const MDB_val *src, MDB_val *dst, const MDB_val *key, int encdec)
 {
@@ -196,7 +196,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
 
     if (lcf->key_file.data) {
 
-        char *key = lcf->key_file.data;
+        u_char *key = lcf->key_file.data;
 
         MDB_val enckey;
         enckey.mv_data = &key[0];
