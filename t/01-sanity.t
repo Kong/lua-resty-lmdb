@@ -12,6 +12,7 @@ my $pwd = cwd();
 our $MainConfig = qq{
     lmdb_environment_path /tmp/test.mdb;
     lmdb_map_size 5m;
+    lmdb_encryption_key_file "12345678900987654321123456789001";
 };
 
 our $HttpConfig = qq{
