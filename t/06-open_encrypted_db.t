@@ -10,8 +10,9 @@ plan tests => repeat_each() * blocks() * 5;
 my $pwd = cwd();
 
 our $MainConfig = qq{
-    lmdb_environment_path /tmp/test.mdb;
+    lmdb_environment_path /tmp/test5.mdb;
     lmdb_map_size 5m;
+    lmdb_encryption_key_file "12345678900987654321123456789001";
 };
 
 our $HttpConfig = qq{
@@ -41,9 +42,9 @@ __DATA__
 --- request
 GET /t
 --- response_body
-true
-value
-nil
+nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
+nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
+nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
 --- no_error_log
 [error]
 [warn]
@@ -67,9 +68,9 @@ nil
 --- request
 GET /t
 --- response_body
-true
-true
-nil
+nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
+nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
+nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
 --- no_error_log
 [error]
 [warn]
@@ -93,54 +94,9 @@ nil
 --- request
 GET /t
 --- response_body
-true
-true
-nil
---- no_error_log
-[error]
-[warn]
-[crit]
-
-
-
-=== TEST 4: db_drop(delete = true)
---- http_config eval: $::HttpConfig
---- main_config eval: $::MainConfig
---- config
-    location = /t {
-        content_by_lua_block {
-            local l = require("resty.lmdb")
-
-            ngx.say(l.set("test", "value"))
-            ngx.say(l.db_drop(true))
-            ngx.say(l.db_drop(true))
-            ngx.say(l.get("test"))
-        }
-    }
---- request
-GET /t
---- response_body
-true
-true
-nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
-nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
---- no_error_log
-[error]
-[warn]
-[crit]
-
-=== TEST 5: works fine when not enabled
---- http_config eval: $::HttpConfig
---- config
-    location = /t {
-        content_by_lua_block {
-            ngx.say("good")
-        }
-    }
---- request
-GET /t
---- response_body
-good
+nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
+nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
+nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
 --- no_error_log
 [error]
 [warn]

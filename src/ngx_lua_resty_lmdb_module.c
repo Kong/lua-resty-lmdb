@@ -86,14 +86,11 @@ ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle)
      * set by ngx_pcalloc():
      *
      *     conf->env_path = NULL;
-     *     conf->key_file = NULL;
      *     conf->env = NULL;
      */
 
     lcf->max_databases = NGX_CONF_UNSET_SIZE;
     lcf->map_size = NGX_CONF_UNSET_SIZE;
-    // lcf->key_file.data = "12345678900987654321123456789009";
-    //lcf->key_file.len =  NGX_CONF_UNSET_SIZE;
     return lcf;
 }
 
@@ -106,7 +103,6 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     ngx_conf_init_size_value(lcf->max_databases, 1);
     /* same as mdb.c DEFAULT_MAPSIZE */
     ngx_conf_init_size_value(lcf->map_size, 1048576);
-    //ngx_conf_init_value(lcf->key_file.data, "12345678900987654321123456789009");
 
     return NGX_CONF_OK;
 }
@@ -121,19 +117,8 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle) {
     return NGX_OK;
 }
 
-static EVP_CIPHER *cipher;
 
-// static int mcf_str2key(const char *passwd, MDB_val *key)
-// {
-// 	unsigned int size;
-// 	EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
-// 	EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
-// 	EVP_DigestUpdate(mdctx, "Just a Constant", sizeof("Just a Constant"));
-// 	EVP_DigestUpdate(mdctx, passwd, strlen(passwd));
-// 	EVP_DigestFinal_ex(mdctx, key->mv_data, &size);
-// 	EVP_MD_CTX_free(mdctx);
-// 	return 0;
-// }
+static EVP_CIPHER *cipher;
 
 static int lmcf_encfunc(const MDB_val *src, MDB_val *dst, const MDB_val *key, int encdec)
 {

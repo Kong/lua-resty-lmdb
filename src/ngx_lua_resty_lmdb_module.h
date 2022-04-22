@@ -5,7 +5,6 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <lmdb.h>
-#include <chacha8.h>
 
 
 struct ngx_lua_resty_lmdb_conf_s {
