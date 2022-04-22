@@ -76,7 +76,7 @@ jobs:
         mkdir ../lib
         git clone https://github.com/openresty/lua-resty-core.git ../lua-resty-core -b ${{ matrix.lua_resty_core }}
         git clone https://github.com/openresty/lua-resty-lrucache.git ../lua-resty-lrucache
-        cp -r ../lua-resty-lrucache/lib/* ../lua-resty-redis/lib/* ../lua-resty-http/lib/* ../lua-resty-openssl/lib/* ../lua-typeof/lib/* ../lua-resty-etcd/lib/* ../lib/
+        #cp -r ../lua-resty-lrucache/lib/* ../lua-resty-redis/lib/* ../lua-resty-http/lib/* ../lua-resty-openssl/lib/* ../lua-typeof/lib/* ../lua-resty-etcd/lib/* ../lib/
         cp -r ../lua-resty-lrucache/lib/* ../lib/
         find ../lib
 
