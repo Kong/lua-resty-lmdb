@@ -196,13 +196,24 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         }
     }
 
-
     rc = mdb_env_open(lcf->env, (const char *) lcf->env_path->name.data, 0, 0600);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                       "unable to open LMDB environment: %s", mdb_strerror(rc));
         return NGX_ERROR;
     }
+
+    rc = mdb_reader_check(lcf->env, &dead);
+    if (rc != 0) {
+        ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                      "unable to check LMDB reader slots: %s", mdb_strerror(rc));
+        /* this is not a fatal error */
+
+    } else if (dead > 0) {
+        ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
+                      "found and cleared %d stale readers from LMDB", dead);
+    }
+
     //---mdb_txn_begin(MDB_env *env, MDB_txn *parent, unsigned int flags, MDB_txn **ret)
     rc = mdb_txn_begin(lcf->env, NULL, MDB_RDONLY, &lcf->ro_txn);
     if (rc != 0) {
