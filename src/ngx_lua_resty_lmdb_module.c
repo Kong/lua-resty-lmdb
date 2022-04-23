@@ -197,7 +197,6 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         }
     }
 
-
     rc = mdb_env_open(lcf->env, (const char *) lcf->env_path->name.data, 0, 0600);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
