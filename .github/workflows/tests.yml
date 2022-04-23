@@ -127,7 +127,8 @@ jobs:
       run: |
         export LD_LIBRARY_PATH=$LUAJIT_LIB:$LD_LIBRARY_PATH
         export PATH=$BASE_PATH/work/nginx/sbin:$PATH
-        TEST_NGINX_TIMEOUT=20 prove -j$JOBS -r t/
+        #TEST_NGINX_TIMEOUT=20 prove -j$JOBS -r t/
+        #TEST_NGINX_TIMEOUT=20 prove -j1 -r t/
 
     - name: Run Valgrind
       if: matrix.valgrind != ''
