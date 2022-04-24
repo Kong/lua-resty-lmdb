@@ -26,11 +26,18 @@ static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
       offsetof(ngx_lua_resty_lmdb_conf_t, env_path),
       NULL },
 
-    { ngx_string("lmdb_encryption_key_file"),
+    { ngx_string("lmdb_encryption_key_data"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
       0,
-      offsetof(ngx_lua_resty_lmdb_conf_t, key_file),
+      offsetof(ngx_lua_resty_lmdb_conf_t, key_data),
+      NULL },
+
+    { ngx_string("lmdb_encryption_type"),
+      NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      0,
+      offsetof(ngx_lua_resty_lmdb_conf_t, encryption_type),
       NULL },
 
     { ngx_string("lmdb_max_databases"),
@@ -93,6 +100,7 @@ ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle)
 
     lcf->max_databases = NGX_CONF_UNSET_SIZE;
     lcf->map_size = NGX_CONF_UNSET_SIZE;
+
     return lcf;
 }
 
@@ -105,7 +113,9 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     ngx_conf_init_size_value(lcf->max_databases, 1);
     /* same as mdb.c DEFAULT_MAPSIZE */
     ngx_conf_init_size_value(lcf->map_size, 1048576);
-
+    if(lcf->key_data.data == NULL){
+        lcf->key_data.data = "11111111111111111111111111111111";
+    }
     return NGX_CONF_OK;
 }
 
@@ -153,6 +163,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
     ngx_lua_resty_lmdb_conf_t *lcf;
     int                        rc;
     int                        dead;
+    int                        block_size = 16;
 
     lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
                                                      ngx_lua_resty_lmdb_module);
@@ -182,17 +193,22 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         return NGX_ERROR;
     }
 
-    if (lcf->key_file.data) {
+    if (lcf->key_data.data) {
 
-        u_char *key = lcf->key_file.data;
+        u_char *key = lcf->key_data.data;
 
         MDB_val enckey;
         enckey.mv_data = &key[0];
         enckey.mv_size = 32;
-
-        cipher = (EVP_CIPHER *)EVP_aes_256_gcm();
-        //cipher = (EVP_CIPHER *)EVP_chacha20_poly1305();
-        rc = mdb_env_set_encrypt(lcf->env, lmcf_encfunc, &enckey, AES_256_GCM_BLOCK_SIZE);
+        if(lcf->encryption_type.data == "EVP_chacha20_poly1305"){
+            cipher = (EVP_CIPHER *)EVP_chacha20_poly1305();
+        }
+        else {
+            cipher = (EVP_CIPHER *)EVP_aes_256_gcm();
+        }
+        //cipher = (EVP_CIPHER *)EVP_aes_256_gcm();
+        block_size = EVP_CIPHER_block_size(cipher);
+        rc = mdb_env_set_encrypt(lcf->env, lmcf_encfunc, &enckey, block_size);
         if (rc != 0) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0, "unable to set LMDB encryption key: %s", mdb_strerror(rc));
             return NGX_ERROR;
