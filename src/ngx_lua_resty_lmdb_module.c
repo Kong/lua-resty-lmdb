@@ -1,12 +1,14 @@
 #include <stdio.h>
-#include <ngx_lua_resty_lmdb_module.h>
-#include <openssl/bio.h>
-#include <openssl/evp.h>
-#include <openssl/des.h>
 #include <stdlib.h>
 #include <memory.h>
 #include <sys/param.h>
+#include <openssl/bio.h>
+#include <openssl/evp.h>
+#include <openssl/des.h>
+#include <ngx_lua_resty_lmdb_module.h>
+
 #include "lmdb.h"
+
 
 static void *ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle);
 static char *ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf);
@@ -122,28 +124,28 @@ static EVP_CIPHER *cipher;
 
 static int lmcf_encfunc(const MDB_val *src, MDB_val *dst, const MDB_val *key, int encdec)
 {
-	unsigned char iv[12];
-	int ivl, outl, rc;
-	mdb_size_t *ptr;
+    unsigned char iv[12];
+    int ivl, outl, rc;
+    mdb_size_t *ptr;
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
 
-	ptr = key[1].mv_data;
-	ivl = ptr[0] & 0xffffffff;
-	memcpy(iv, &ivl, 4);
-	memcpy(iv+4, ptr+1, sizeof(mdb_size_t));
+    ptr = key[1].mv_data;
+    ivl = ptr[0] & 0xffffffff;
+    memcpy(iv, &ivl, 4);
+    memcpy(iv+4, ptr+1, sizeof(mdb_size_t));
 
-	EVP_CipherInit_ex(ctx, cipher, NULL, key[0].mv_data, iv, encdec);
-	EVP_CIPHER_CTX_set_padding(ctx, 0);
-	if (!encdec) {
-		EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, key[2].mv_size, key[2].mv_data);
-	}
-	rc = EVP_CipherUpdate(ctx, dst->mv_data, &outl, src->mv_data, src->mv_size);
-	if (rc)
-		rc = EVP_CipherFinal_ex(ctx, key[2].mv_data, &outl);
-	if (rc && encdec) {
-		EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_GET_TAG, key[2].mv_size, key[2].mv_data);
-	}
-	return rc == 0;
+    EVP_CipherInit_ex(ctx, cipher, NULL, key[0].mv_data, iv, encdec);
+    EVP_CIPHER_CTX_set_padding(ctx, 0);
+    if (!encdec) {
+        EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, key[2].mv_size, key[2].mv_data);
+    }
+    rc = EVP_CipherUpdate(ctx, dst->mv_data, &outl, src->mv_data, src->mv_size);
+    if (rc)
+        rc = EVP_CipherFinal_ex(ctx, key[2].mv_data, &outl);
+    if (rc && encdec) {
+        EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_GET_TAG, key[2].mv_size, key[2].mv_data);
+    }
+    return rc == 0;
 }
 
 static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)

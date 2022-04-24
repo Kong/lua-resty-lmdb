@@ -51,9 +51,6 @@ extern ngx_module_t ngx_lua_resty_lmdb_module;
 #endif
 
 
-#define	CHACHA_KEY_SIZE	32
-#define CHACHA_CTR_SIZE	16
-#define CHACHA_BLK_SIZE	64
 #define POLY1305_BLOCK_SIZE	16
 #define AES_256_GCM_BLOCK_SIZE 16
 
