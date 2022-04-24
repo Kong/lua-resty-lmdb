@@ -5,7 +5,7 @@ ngx_module_incs="$ngx_addon_dir/lmdb/libraries/liblmdb $ngx_addon_dir/src"
 
 . auto/module
 
-LINK_DEPS="$LINK_DEPS $ngx_addon_dir/lmdb/libraries/liblmdb/liblmdb.a $ngx_addon_dir/lmdb/libraries/liblmdb/chacha8.a"
-CORE_LIBS="$CORE_LIBS $ngx_addon_dir/lmdb/libraries/liblmdb/liblmdb.a $ngx_addon_dir/lmdb/libraries/liblmdb/chacha8.a"
+LINK_DEPS="$LINK_DEPS $ngx_addon_dir/lmdb/libraries/liblmdb/liblmdb.a"
+CORE_LIBS="$CORE_LIBS $ngx_addon_dir/lmdb/libraries/liblmdb/liblmdb.a"
 
 ngx_addon_name=$ngx_module_name

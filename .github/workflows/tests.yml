@@ -118,17 +118,14 @@ jobs:
         export
         cd $BASE_PATH
         if [ ! -e work ]; then ngx-build ${{ matrix.nginx }} --add-module=../ndk-nginx-module --add-module=../lua-nginx-module --add-module=../lua-resty-lmdb/lua-resty-lmdb --with-http_ssl_module --with-stream --with-stream_ssl_module --with-stream_ssl_preread_module --with-cc-opt="-I$OPENSSL_INC $NGINX_CC_OPTS" --with-ld-opt="-L$OPENSSL_LIB -Wl,-rpath,$OPENSSL_LIB" --with-debug > build.log 2>&1 || (cat build.log && exit 1); fi
-        # if [ ! -e work ]; then ngx-build ${{ matrix.nginx }} --add-module=../ndk-nginx-module --add-module=../lua-nginx-module --add-module=../lua-resty-lmdb/lua-resty-lmdb --with-cc-opt="-I$OPENSSL_INC $NGINX_CC_OPTS" --with-ld-opt="-L$OPENSSL_LIB -Wl,-rpath,$OPENSSL_LIB" --with-debug > build.log 2>&1 || (cat build.log && exit 1); fi
         nginx -V
-        #ldd `which nginx`|grep -E 'luajit|pcre'
         ldd `which nginx`|grep -E 'luajit|ssl|pcre'
 
     - name: Run Test
       run: |
         export LD_LIBRARY_PATH=$LUAJIT_LIB:$LD_LIBRARY_PATH
         export PATH=$BASE_PATH/work/nginx/sbin:$PATH
-        #TEST_NGINX_TIMEOUT=20 prove -j$JOBS -r t/
-        #TEST_NGINX_TIMEOUT=20 prove -j1 -r t/
+        TEST_NGINX_TIMEOUT=20 prove -j1 -r t/
 
     - name: Run Valgrind
       if: matrix.valgrind != ''
