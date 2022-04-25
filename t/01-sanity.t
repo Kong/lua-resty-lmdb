@@ -33,6 +33,7 @@ our $HttpConfigWithInit = qq{
 
 no_long_string();
 #no_diff();
+no_shuffle();
 
 run_tests();
 
