@@ -104,7 +104,7 @@ ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle)
     return lcf;
 }
 
-u_char init_key[] = "11111222223333344444555556666677";
+static u_char init_key[] = "11111222223333344444555556666677";
 static char *
 ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 {
