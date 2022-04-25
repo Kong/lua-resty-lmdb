@@ -31,9 +31,9 @@ our $HttpConfigWithInit = qq{
     }
 };
 
-no_shuffle();
 no_long_string();
 #no_diff();
+no_shuffle();
 
 run_tests();
 
