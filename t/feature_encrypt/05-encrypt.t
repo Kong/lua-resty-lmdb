@@ -13,7 +13,7 @@ our $MainConfig = qq{
     lmdb_environment_path /tmp/test5.mdb;
     lmdb_map_size 5m;
     lmdb_encryption_key_data "12345678900987654321123456789002";
-    lmdb_encryption_type "EVP_chacha20_poly1305";
+    lmdb_encryption_type 1;
 };
 
 our $HttpConfig = qq{
@@ -109,47 +109,3 @@ nil
 [warn]
 [crit]
 
-
-
-=== TEST 4: db_drop(delete = true)
---- http_config eval: $::HttpConfig
---- main_config eval: $::MainConfig
---- config
-    location = /t {
-        content_by_lua_block {
-            local l = require("resty.lmdb")
-
-            ngx.say(l.set("test", "value"))
-            ngx.say(l.db_drop(true))
-            ngx.say(l.db_drop(true))
-            ngx.say(l.get("test"))
-        }
-    }
---- request
-GET /t
---- response_body
-true
-true
-nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
-nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
---- no_error_log
-[error]
-[warn]
-[crit]
-
-=== TEST 5: works fine when not enabled
---- http_config eval: $::HttpConfig
---- config
-    location = /t {
-        content_by_lua_block {
-            ngx.say("good")
-        }
-    }
---- request
-GET /t
---- response_body
-good
---- no_error_log
-[error]
-[warn]
-[crit]

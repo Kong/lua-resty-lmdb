@@ -35,7 +35,7 @@ static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
 
     { ngx_string("lmdb_encryption_type"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
-      ngx_conf_set_str_slot,
+      ngx_conf_set_num_slot,
       0,
       offsetof(ngx_lua_resty_lmdb_conf_t, encryption_type),
       NULL },
@@ -100,11 +100,11 @@ ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle)
 
     lcf->max_databases = NGX_CONF_UNSET_SIZE;
     lcf->map_size = NGX_CONF_UNSET_SIZE;
-
+    lcf->encryption_type = NGX_CONF_UNSET_UINT;
     return lcf;
 }
 
-
+u_char init_key[] = "11111222223333344444555556666677";
 static char *
 ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 {
@@ -113,12 +113,15 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     ngx_conf_init_size_value(lcf->max_databases, 1);
     /* same as mdb.c DEFAULT_MAPSIZE */
     ngx_conf_init_size_value(lcf->map_size, 1048576);
+    ngx_conf_init_uint_value(lcf->encryption_type, 2);
     if(lcf->key_data.data == NULL){
-        lcf->key_data.data = "11111111111111111111111111111111";
+
+        lcf->key_data.data = init_key;
     }
+
     return NGX_CONF_OK;
 }
-
+ 
 
 static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle) {
     /* ngx_lua_resty_lmdb_conf_t *lcf;
@@ -195,12 +198,12 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
 
     if (lcf->key_data.data) {
 
-        u_char *key = lcf->key_data.data;
-
+        //u_char *key = lcf->key_data.data;
         MDB_val enckey;
-        enckey.mv_data = &key[0];
+        //enckey.mv_data = &key[0];
+        enckey.mv_data = lcf->key_data.data;
         enckey.mv_size = 32;
-        if(lcf->encryption_type.data == "EVP_chacha20_poly1305"){
+        if(lcf->encryption_type == 1){
             cipher = (EVP_CIPHER *)EVP_chacha20_poly1305();
         }
         else {
@@ -213,6 +216,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0, "unable to set LMDB encryption key: %s", mdb_strerror(rc));
             return NGX_ERROR;
         }
+        lcf->key_data.data = NULL;
     }
 
     rc = mdb_env_open(lcf->env, (const char *) lcf->env_path->name.data, 0, 0600);
