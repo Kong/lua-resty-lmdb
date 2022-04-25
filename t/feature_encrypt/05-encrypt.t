@@ -20,6 +20,7 @@ our $HttpConfig = qq{
     lua_package_path "$pwd/lib/?.lua;;";
 };
 
+no_shuffle();
 no_long_string();
 #no_diff();
 
@@ -41,6 +42,7 @@ __DATA__
             local _,q
             _, q=string.find(str, 'test')
             if q == nil then ngx.say("can not find plaintxt") else ngx.say("can find plaintxt") end
+            local ret = io.close(file1);
             ngx.say(l.get("test"))
             ngx.say(l.get("test_not_exist"))
         }

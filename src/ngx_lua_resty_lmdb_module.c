@@ -166,7 +166,6 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
     ngx_lua_resty_lmdb_conf_t *lcf;
     int                        rc;
     int                        dead;
-    int                        block_size = 16;
 
     lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
                                                      ngx_lua_resty_lmdb_module);
@@ -210,7 +209,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
             cipher = (EVP_CIPHER *)EVP_aes_256_gcm();
         }
         //cipher = (EVP_CIPHER *)EVP_aes_256_gcm();
-        block_size = EVP_CIPHER_block_size(cipher);
+        int block_size = EVP_CIPHER_block_size(cipher);
         rc = mdb_env_set_encrypt(lcf->env, lmcf_encfunc, &enckey, block_size);
         if (rc != 0) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0, "unable to set LMDB encryption key: %s", mdb_strerror(rc));
