@@ -18,6 +18,7 @@ our $HttpConfig = qq{
     lua_package_path "$pwd/lib/?.lua;;";
 };
 
+no_shuffle();
 no_long_string();
 #no_diff();
 
@@ -46,7 +47,7 @@ GET /t
 --- response_body
 true
 value
-nil
+nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
 nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
 nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
 nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
