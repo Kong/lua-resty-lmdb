@@ -10,7 +10,7 @@
 struct ngx_lua_resty_lmdb_conf_s {
     ngx_path_t  *env_path;
     ngx_str_t   key_data;
-    ngx_uint_t   encryption_type;
+    ngx_uint_t  encryption_type;
     size_t      max_databases;
     size_t      map_size;
     MDB_env     *env;
