@@ -216,6 +216,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0, "unable to set LMDB encryption key: %s", mdb_strerror(rc));
             return NGX_ERROR;
         }
+
         lcf->key_data.data = NULL;
     }
 
