@@ -113,28 +113,24 @@ static char *
 ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 {
     ngx_lua_resty_lmdb_conf_t *lcf = conf;
+    const char*               cipher_type;
 
     ngx_conf_init_size_value(lcf->max_databases, 1);
     /* same as mdb.c DEFAULT_MAPSIZE */
     ngx_conf_init_size_value(lcf->map_size, 1048576);
-    if (lcf->key_data.data && lcf->encryption_type.data) {
-        const char* cipher_type = (char *)lcf->encryption_type.data;
+    cipher = (EVP_CIPHER *)EVP_aes_256_gcm();
+    if (lcf->encryption_type.data) {
+        cipher_type = (char *)lcf->encryption_type.data;
         cipher = EVP_get_cipherbyname(cipher_type);
-        if (cipher) {
-            return NGX_CONF_OK;
-
-        } else {
+        if (!cipher) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0, "invalid \"EVP_cipher\": \"%s\"",cipher_type);
             return NGX_CONF_ERROR;
         }
 
-    } else if (!lcf->key_data.data && lcf->encryption_type.data) {
-        return NGX_CONF_ERROR;
-
-    } else if (lcf->key_data.data && !lcf->encryption_type.data) {
-        return NGX_CONF_ERROR;
-
-    } else {
-        return NGX_CONF_OK;
+        if (!lcf->key_data.data) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0, "no \"lmdb_encryption_key_data\" is defined when \"lmdb_encryption_type\" is set");
+            return NGX_CONF_ERROR;
+        }
     }
 
     return NGX_CONF_OK;
@@ -153,25 +149,25 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle) {
 
 static int mcf_str2key(const char *passwd, MDB_val *key)
 {
-	unsigned int    size;
+    unsigned int    size;
     int             rc;
-	EVP_MD_CTX      *mdctx = EVP_MD_CTX_new();
+    EVP_MD_CTX      *mdctx = EVP_MD_CTX_new();
 
-	rc = EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
+    rc = EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
     if (rc) {
-	    rc = EVP_DigestUpdate(mdctx, EVP_DIGEST_CONSTANT, sizeof(EVP_DIGEST_CONSTANT));
+        rc = EVP_DigestUpdate(mdctx, EVP_DIGEST_CONSTANT, sizeof(EVP_DIGEST_CONSTANT));
     }
 
     if (rc) {
-	    rc = EVP_DigestUpdate(mdctx, passwd, strlen(passwd));
+        rc = EVP_DigestUpdate(mdctx, passwd, strlen(passwd));
     }
 
     if (rc) {
-	    rc = EVP_DigestFinal_ex(mdctx, key->mv_data, &size);
+        rc = EVP_DigestFinal_ex(mdctx, key->mv_data, &size);
     }
 
-	EVP_MD_CTX_free(mdctx);
-	return rc == 0;
+    EVP_MD_CTX_free(mdctx);
+    return rc == 0;
 }
 
 
@@ -251,7 +247,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         return NGX_ERROR;
     }
 
-    if (lcf->key_data.data&&lcf->encryption_type.data) {
+    if (lcf->key_data.data&&cipher) {
         enckey.mv_data = keybuf;
         enckey.mv_size = 32;
         passwd = (char *)lcf->key_data.data;
