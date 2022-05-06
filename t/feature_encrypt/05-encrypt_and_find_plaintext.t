@@ -16,6 +16,11 @@ our $MainConfig = qq{
     lmdb_encryption_type "chacha20-poly1305";
 };
 
+our $MainConfig1 = qq{
+    lmdb_environment_path /tmp/test6.mdb;
+    lmdb_map_size 5m;
+};
+
 our $HttpConfig = qq{
     lua_package_path "$pwd/lib/?.lua;;";
 };
@@ -115,3 +120,36 @@ nil
 [warn]
 [crit]
 
+=== TEST 4: simple set() / get()
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig1
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            ngx.say(l.set("test", "unenc"))
+            local file1 = io.input("/tmp/test6.mdb/data.mdb")
+            local str = io.read("*a")
+            local _,q,p
+            _, q = string.find(str, 'test')
+            if q == nil then ngx.say("can not find plaintxt key") else ngx.say("can find plaintxt key") end
+            _, p = string.find(str, 'unenc')
+            if p == nil then ngx.say("can not find plaintxt value") else ngx.say("can find plaintxt value") end
+            local ret = io.close(file1);
+            ngx.say(l.get("test"))
+            ngx.say(l.get("test_not_exist"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+can find plaintxt key
+can find plaintxt value
+unenc
+nil
+--- no_error_log
+[error]
+[warn]
+[crit]

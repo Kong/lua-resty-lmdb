@@ -20,9 +20,12 @@ our $HttpConfig = qq{
 
 our $HttpConfigWithInit = qq{
     lua_package_path "$pwd/lib/?.lua;;";
+
     init_by_lua_block {
         local l = require("resty.lmdb")
+
         local res, err = l.set("test", "value")
+
         package.loaded.res = res
         package.loaded.err = err
     }
