@@ -36,7 +36,7 @@ __DATA__
             local l = require("resty.lmdb")
 
             ngx.say(l.set("test", "unenc"))
-            local file1 = io.input("/tmp/test8.mdb/data.mdb")  
+            local file1 = io.input("/tmp/test8.mdb/data.mdb")
             local str = io.read("*a")
             local _,q,p
             _, q = string.find(str, 'test')

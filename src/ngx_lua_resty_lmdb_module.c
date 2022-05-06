@@ -127,10 +127,10 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
             return NGX_CONF_ERROR;
         }
 
-    } else if((!lcf->key_data.data)&&lcf->encryption_type.data) {
+    } else if ((!lcf->key_data.data)&&lcf->encryption_type.data) {
         return NGX_CONF_ERROR;
 
-    } else if(lcf->key_data.data&&(!lcf->encryption_type.data)) {
+    } else if (lcf->key_data.data&&(!lcf->encryption_type.data)) {
         return NGX_CONF_ERROR;
 
     } else {
@@ -139,7 +139,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 
     return NGX_CONF_OK;
 }
- 
+
 
 static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle) {
     /* ngx_lua_resty_lmdb_conf_t *lcf;
@@ -236,7 +236,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
                       "unable to create LMDB environment");
         return NGX_ERROR;
     }
-    
+
     rc = mdb_env_set_mapsize(lcf->env, lcf->map_size);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
@@ -251,7 +251,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         return NGX_ERROR;
     }
 
-    if (lcf->key_data.data&&lcf->encryption_type.data) {        
+    if (lcf->key_data.data&&lcf->encryption_type.data) {
         enckey.mv_data = keybuf;
         enckey.mv_size = 32;
         passwd = (char *)lcf->key_data.data;

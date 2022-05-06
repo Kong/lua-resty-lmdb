@@ -37,7 +37,7 @@ __DATA__
             local l = require("resty.lmdb")
 
             ngx.say(l.set("test", "encrypted"))
-            local file1 = io.input("/tmp/test5.mdb/data.mdb")  
+            local file1 = io.input("/tmp/test5.mdb/data.mdb")
             local str = io.read("*a")
             local _,q,p
             _, q = string.find(str, 'test')
@@ -45,7 +45,7 @@ __DATA__
             _, p = string.find(str, 'encrypted')
             if p == nil then ngx.say("can not find plaintxt value") else ngx.say("can find plaintxt value") end
             local ret = io.close(file1);
-            
+
             ngx.say(l.get("test"))
             ngx.say(l.get("test_not_exist"))
         }
