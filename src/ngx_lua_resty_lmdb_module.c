@@ -127,7 +127,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
             return NGX_CONF_ERROR;
         }
 
-    } else if ((!lcf->key_data.data)&&lcf->encryption_type.data) {
+    } else if (!lcf->key_data.data && lcf->encryption_type.data) {
         return NGX_CONF_ERROR;
 
     } else if (lcf->key_data.data && !lcf->encryption_type.data) {
