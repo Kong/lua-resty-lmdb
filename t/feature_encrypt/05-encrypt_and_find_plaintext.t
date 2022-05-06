@@ -42,7 +42,7 @@ __DATA__
             local l = require("resty.lmdb")
 
             ngx.say(l.set("test", "encrypted"))
-            local file1 = io.input("/tmp/test5.mdb/data.mdb")
+            local file1 = io.input("t/test5.mdb/data.mdb")
             local str = io.read("*a")
             local _,q,p
             _, q = string.find(str, 'test')
@@ -129,7 +129,7 @@ nil
             local l = require("resty.lmdb")
 
             ngx.say(l.set("test", "unenc"))
-            local file1 = io.input("/tmp/test6.mdb/data.mdb")
+            local file1 = io.input("t/test6.mdb/data.mdb")
             local str = io.read("*a")
             local _,q,p
             _, q = string.find(str, 'test')
