@@ -10,7 +10,7 @@ plan tests => repeat_each() * blocks() * 5;
 my $pwd = cwd();
 
 our $MainConfig = qq{
-    lmdb_environment_path /tmp/test.mdb;
+    lmdb_environment_path $pwd/t/test.mdb;
     lmdb_map_size 5m;
 };
 

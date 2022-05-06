@@ -30,20 +30,6 @@ static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
       offsetof(ngx_lua_resty_lmdb_conf_t, env_path),
       NULL },
 
-    { ngx_string("lmdb_encryption_key_data"),
-      NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
-      ngx_conf_set_str_slot,
-      0,
-      offsetof(ngx_lua_resty_lmdb_conf_t, key_data),
-      NULL },
-
-    { ngx_string("lmdb_encryption_type"),
-      NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
-      ngx_conf_set_str_slot,
-      0,
-      offsetof(ngx_lua_resty_lmdb_conf_t, encryption_type),
-      NULL },
-
     { ngx_string("lmdb_max_databases"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_size_slot,
@@ -56,6 +42,20 @@ static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
       ngx_conf_set_size_slot,
       0,
       offsetof(ngx_lua_resty_lmdb_conf_t, map_size),
+      NULL },
+
+    { ngx_string("lmdb_encryption_key_data"),
+      NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      0,
+      offsetof(ngx_lua_resty_lmdb_conf_t, key_data),
+      NULL },
+
+    { ngx_string("lmdb_encryption_type"),
+      NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      0,
+      offsetof(ngx_lua_resty_lmdb_conf_t, encryption_type),
       NULL },
 
       ngx_null_command
