@@ -33,7 +33,6 @@ our $HttpConfigWithInit = qq{
 
 no_long_string();
 #no_diff();
-no_shuffle();
 
 run_tests();
 
@@ -48,12 +47,6 @@ __DATA__
             local l = require("resty.lmdb")
 
             ngx.say(l.set("test", "value"))
-            local file1=io.input("/tmp/test.mdb/data.mdb")  
-            local str=io.read("*a")
-            local _,q
-            _, q=string.find(str, 'test')
-            if q == nil then ngx.say("can find plaintxt") else ngx.say("can not find plaintxt") end
-            local ret = io.close(file1);
             ngx.say(l.get("test"))
             ngx.say(l.get("test_not_exist"))
         }
@@ -62,7 +55,6 @@ __DATA__
 GET /t
 --- response_body
 true
-can find plaintxt
 value
 nil
 --- no_error_log

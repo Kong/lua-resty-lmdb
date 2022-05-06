@@ -10,18 +10,18 @@ plan tests => repeat_each() * blocks() * 5;
 my $pwd = cwd();
 
 our $MainConfig = qq{
-    lmdb_environment_path /tmp/test.mdb;
+    lmdb_environment_path /tmp/test8.mdb;
     lmdb_map_size 5m;
-    lmdb_encryption_key_data "12345678900987654321123456789002";
-    lmdb_encryption_type 1;
 };
 
 our $HttpConfig = qq{
     lua_package_path "$pwd/lib/?.lua;;";
 };
 
+
 no_long_string();
 #no_diff();
+no_shuffle();
 
 run_tests();
 
@@ -35,7 +35,15 @@ __DATA__
         content_by_lua_block {
             local l = require("resty.lmdb")
 
-            ngx.say(l.set("test", "value"))
+            ngx.say(l.set("test", "unenc"))
+            local file1 = io.input("/tmp/test8.mdb/data.mdb")  
+            local str = io.read("*a")
+            local _,q,p
+            _, q = string.find(str, 'test')
+            if q == nil then ngx.say("can not find plaintxt key") else ngx.say("can find plaintxt key") end
+            _, p = string.find(str, 'unenc')
+            if p == nil then ngx.say("can not find plaintxt value") else ngx.say("can find plaintxt value") end
+            local ret = io.close(file1);
             ngx.say(l.get("test"))
             ngx.say(l.get("test_not_exist"))
         }
@@ -43,12 +51,12 @@ __DATA__
 --- request
 GET /t
 --- response_body
-nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
-nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
-nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption failed
+true
+can find plaintxt key
+can find plaintxt value
+unenc
+nil
 --- no_error_log
 [error]
 [warn]
 [crit]
-
-

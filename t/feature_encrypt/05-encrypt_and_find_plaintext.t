@@ -12,8 +12,8 @@ my $pwd = cwd();
 our $MainConfig = qq{
     lmdb_environment_path /tmp/test5.mdb;
     lmdb_map_size 5m;
-    lmdb_encryption_key_data "12345678900987654321123456789002";
-    lmdb_encryption_type 1;
+    lmdb_encryption_key_data "123456789009876543211";
+    lmdb_encryption_type "EVP_chacha20_poly1305";
 };
 
 our $HttpConfig = qq{
@@ -36,12 +36,14 @@ __DATA__
         content_by_lua_block {
             local l = require("resty.lmdb")
 
-            ngx.say(l.set("test", "value"))
-            local file1=io.input("/tmp/test5.mdb/data.mdb")  
-            local str=io.read("*a")
-            local _,q
-            _, q=string.find(str, 'test')
-            if q == nil then ngx.say("can not find plaintxt") else ngx.say("can find plaintxt") end
+            ngx.say(l.set("test", "encrypted"))
+            local file1 = io.input("/tmp/test5.mdb/data.mdb")  
+            local str = io.read("*a")
+            local _,q,p
+            _, q = string.find(str, 'test')
+            if q == nil then ngx.say("can not find plaintxt key") else ngx.say("can find plaintxt key") end
+            _, p = string.find(str, 'encrypted')
+            if p == nil then ngx.say("can not find plaintxt value") else ngx.say("can find plaintxt value") end
             local ret = io.close(file1);
             
             ngx.say(l.get("test"))
@@ -52,8 +54,9 @@ __DATA__
 GET /t
 --- response_body
 true
-can not find plaintxt
-value
+can not find plaintxt key
+can not find plaintxt value
+encrypted
 nil
 --- no_error_log
 [error]

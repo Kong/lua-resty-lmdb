@@ -10,16 +10,24 @@ plan tests => repeat_each() * blocks() * 5;
 my $pwd = cwd();
 
 our $MainConfig = qq{
-    lmdb_environment_path /tmp/test5.mdb;
+    lmdb_environment_path /tmp/test6.mdb;
     lmdb_map_size 5m;
-    lmdb_encryption_key_data "12345678900987654321123456789001";
-    lmdb_encryption_type 1;
+    lmdb_encryption_key_data "12345678900987654321123456789002";
+    lmdb_encryption_type "EVP_chacha20_poly1305";
+};
+
+our $MainConfig1 = qq{
+    lmdb_environment_path /tmp/test6.mdb;
+    lmdb_map_size 5m;
+    lmdb_encryption_key_data "1234567890098765432";
+    lmdb_encryption_type "EVP_chacha20_poly1305";
 };
 
 our $HttpConfig = qq{
     lua_package_path "$pwd/lib/?.lua;;";
 };
 
+no_shuffle();
 no_long_string();
 #no_diff();
 
@@ -27,9 +35,33 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: simple set() / get()
+=== TEST 1: encrypt db with right key
 --- http_config eval: $::HttpConfig
 --- main_config eval: $::MainConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            ngx.say(l.set("test", "value"))
+            ngx.say(l.get("test"))
+            ngx.say(l.get("test_not_exist"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+value
+nil
+--- no_error_log
+[error]
+[warn]
+[crit]
+
+=== TEST 2: open db with wrong key
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig1
 --- config
     location = /t {
         content_by_lua_block {
@@ -50,5 +82,4 @@ nilunable to open DB for access: MDB_CRYPTO_FAIL: Page encryption or decryption 
 [error]
 [warn]
 [crit]
-
 
