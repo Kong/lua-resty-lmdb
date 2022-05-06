@@ -117,7 +117,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     ngx_conf_init_size_value(lcf->max_databases, 1);
     /* same as mdb.c DEFAULT_MAPSIZE */
     ngx_conf_init_size_value(lcf->map_size, 1048576);
-    if (lcf->key_data.data&&lcf->encryption_type.data) {
+    if (lcf->key_data.data && lcf->encryption_type.data) {
         const char* cipher_type = (char *)lcf->encryption_type.data;
         cipher = EVP_get_cipherbyname(cipher_type);
         if (cipher) {
