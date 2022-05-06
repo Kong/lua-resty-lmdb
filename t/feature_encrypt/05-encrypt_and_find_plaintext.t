@@ -10,14 +10,14 @@ plan tests => repeat_each() * blocks() * 5;
 my $pwd = cwd();
 
 our $MainConfig = qq{
-    lmdb_environment_path $pwd/t/test5.mdb;
+    lmdb_environment_path /tmp/test5.mdb;
     lmdb_map_size 5m;
     lmdb_encryption_key_data "123456789009876543211";
     lmdb_encryption_type "chacha20-poly1305";
 };
 
 our $MainConfig1 = qq{
-    lmdb_environment_path $pwd/t/test6.mdb;
+    lmdb_environment_path /tmp/test6.mdb;
     lmdb_map_size 5m;
 };
 
@@ -42,7 +42,7 @@ __DATA__
             local l = require("resty.lmdb")
 
             ngx.say(l.set("test", "encrypted"))
-            local file1 = io.input("t/test5.mdb/data.mdb")
+            local file1 = io.input("/tmp/test5.mdb/data.mdb")
             local str = io.read("*a")
             local _,q,p
             _, q = string.find(str, 'test')
@@ -129,7 +129,7 @@ nil
             local l = require("resty.lmdb")
 
             ngx.say(l.set("test", "unenc"))
-            local file1 = io.input("t/test6.mdb/data.mdb")
+            local file1 = io.input("/tmp/test6.mdb/data.mdb")
             local str = io.read("*a")
             local _,q,p
             _, q = string.find(str, 'test')
