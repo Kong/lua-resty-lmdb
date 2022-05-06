@@ -52,7 +52,9 @@ extern ngx_module_t ngx_lua_resty_lmdb_module;
 #endif
 
 
+#ifndef EVP_DIGEST_CONSTANT
 #define EVP_DIGEST_CONSTANT "1qazxsw2"
+#endif
 
 
 #endif /* _NGX_LUA_RESTY_LMDB_MODULE_H_INCLUDED_ */
