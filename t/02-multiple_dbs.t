@@ -18,7 +18,6 @@ our $HttpConfig = qq{
     lua_package_path "$pwd/lib/?.lua;;";
 };
 
-no_shuffle();
 no_long_string();
 #no_diff();
 

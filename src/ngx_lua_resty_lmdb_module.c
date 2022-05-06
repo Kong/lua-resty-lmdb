@@ -11,7 +11,7 @@
 #include "lmdb.h"
 
 
-static EVP_CIPHER *cipher;
+static const EVP_CIPHER *cipher;
 
 
 static void *ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle);
@@ -119,8 +119,8 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     ngx_conf_init_size_value(lcf->map_size, 1048576);
     if (lcf->key_data.data&&lcf->encryption_type.data) {
         const char* cipher_type = (char *)lcf->encryption_type.data;
-        if(strcmp(cipher_type,"AES-256-CBC") == 0) {
-            cipher = (EVP_CIPHER *)EVP_aes_256_cbc();
+        if(strcmp(cipher_type,"AES-256-GCM") == 0) {
+            cipher = (EVP_CIPHER *)EVP_aes_256_gcm();
 
         } else if(strcmp(cipher_type,"EVP_chacha20_poly1305") == 0) {
             cipher = (EVP_CIPHER *)EVP_chacha20_poly1305();
@@ -128,7 +128,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
         } else {
             cipher = NULL;
         }
-
+        
         if (cipher) {
             return NGX_CONF_OK;
 

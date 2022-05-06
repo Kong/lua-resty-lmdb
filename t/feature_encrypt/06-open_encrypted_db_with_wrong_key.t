@@ -13,14 +13,14 @@ our $MainConfig = qq{
     lmdb_environment_path /tmp/test6.mdb;
     lmdb_map_size 5m;
     lmdb_encryption_key_data "12345678900987654321123456789002";
-    lmdb_encryption_type "EVP_chacha20_poly1305";
+    lmdb_encryption_type "AES-256-GCM";
 };
 
 our $MainConfig1 = qq{
     lmdb_environment_path /tmp/test6.mdb;
     lmdb_map_size 5m;
     lmdb_encryption_key_data "1234567890098765432";
-    lmdb_encryption_type "EVP_chacha20_poly1305";
+    lmdb_encryption_type "AES-256-GCM";
 };
 
 our $HttpConfig = qq{
