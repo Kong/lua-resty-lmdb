@@ -13,7 +13,7 @@ our $MainConfig = qq{
     lmdb_environment_path /tmp/test5.mdb;
     lmdb_map_size 5m;
     lmdb_encryption_key_data "123456789009876543211";
-    lmdb_encryption_type "AES-256-GCM";
+    lmdb_encryption_type "chacha20-poly1305";
 };
 
 our $HttpConfig = qq{
