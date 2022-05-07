@@ -122,13 +122,13 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     if (lcf->encryption_type.data) {
         cipher_type = (char *)lcf->encryption_type.data;
         cipher = EVP_get_cipherbyname(cipher_type);
-        if (!cipher) {
-            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0, "invalid \"EVP_cipher\": \"%s\"",cipher_type);
+        if (!cipher || ((cipher != (EVP_CIPHER *)EVP_chacha20_poly1305()) && (cipher != (EVP_CIPHER *)EVP_aes_256_gcm()))) {
+            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0, "invalid \"lmdb_encryption_type\": \"%s\"",cipher_type);
             return NGX_CONF_ERROR;
         }
 
         if (!lcf->key_data.data) {
-            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0, "no \"lmdb_encryption_key_data\" is defined when \"lmdb_encryption_type\" is set");
+            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0, "no \"lmdb_encryption_key_data\" is defined when \"lmdb_encryption_type\" is set");
             return NGX_CONF_ERROR;
         }
     }
@@ -247,7 +247,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         return NGX_ERROR;
     }
 
-    if (lcf->key_data.data&&cipher) {
+    if (lcf->key_data.data && cipher) {
         enckey.mv_data = keybuf;
         enckey.mv_size = 32;
         passwd = (char *)lcf->key_data.data;
