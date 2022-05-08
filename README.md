@@ -178,13 +178,13 @@ from the `txn` table when `commit()` returned an error is undefined.
 
 **context:** *main*
 
-Encrypt the lmdb database, note that set lmdb_encryption_key_data to enable encryption.
+Encrypt the lmdb database. Encryption is enabled only when the lmdb_encryption_key_data is set. The lmdb_encryption_key_data will be used as the key to encrypt lmdb.
 
 [Back to TOC](#table-of-contents)
 
 ### lmdb_encryption_type
 
-**syntax:** *lmdb_encryption_type "AES-256-GCM";*
+**syntax:** *lmdb_encryption_type "aes-256-gcm";*
 
 **context:** *main*
 
