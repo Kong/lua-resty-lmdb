@@ -122,7 +122,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     if (lcf->encryption_type.data) {
         cipher_type = (char *)lcf->encryption_type.data;
         cipher = EVP_get_cipherbyname(cipher_type);
-        if (!cipher || ((cipher != (EVP_CIPHER *)EVP_chacha20_poly1305()) && (cipher != (EVP_CIPHER *)EVP_aes_256_gcm()))) {
+        if (!cipher || (cipher != (EVP_CIPHER *)EVP_chacha20_poly1305() && cipher != (EVP_CIPHER *)EVP_aes_256_gcm())) {
             ngx_log_error(NGX_LOG_EMERG, cycle->log, 0, "invalid \"lmdb_encryption_type\": \"%s\"",cipher_type);
             return NGX_CONF_ERROR;
         }
