@@ -51,7 +51,7 @@ jobs:
       with:
         path: |
           /home/runner/work/cache
-        key: ${{ runner.os }}-${{ hashFiles('**/tests.yml') }}-${{ hashFiles('**/*.c', '**/*.h') }}-nginx-${{ matrix.nginx }}-openssl-${{ matrix.openssl }}
+        key: ${{ runner.os }}-${{ hashFiles('**/tests.yml') }}-${{ hashFiles('**/*.c', '**/*.h', 'config', 'config.make') }}-nginx-${{ matrix.nginx }}-openssl-${{ matrix.openssl }}
 
     - name: Setup tools
       run: |
