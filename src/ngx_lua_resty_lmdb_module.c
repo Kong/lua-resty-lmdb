@@ -116,14 +116,21 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     /* same as mdb.c DEFAULT_MAPSIZE */
     ngx_conf_init_size_value(lcf->map_size, 1048576);
 
+    if (ngx_strcmp(lcf->encryption_type.data, "aes-256-gcm") != 0 &&
+        ngx_strcmp(lcf->encryption_type.data, "chacha20-poly1305") != 0 ) {
+        ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+                "invalid \"lmdb_encryption_type\": \"%V\"", &lcf->encryption_type);
+
+        return NGX_CONF_ERROR;
+    }
+
     if (lcf->key_data.data != NULL) {
         cipher = EVP_get_cipherbyname((char *)lcf->encryption_type.data);
 
-        if (cipher == NULL ||
-            (cipher != (EVP_CIPHER *)EVP_chacha20_poly1305() &&
-             cipher != (EVP_CIPHER *)EVP_aes_256_gcm())) {
+        if (cipher == NULL ) {
             ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
-                "invalid \"lmdb_encryption_type\": \"%V\"", &lcf->encryption_type);
+                "init \"lmdb_encryption\": \"%V\" failed",
+                &lcf->encryption_type);
 
             return NGX_CONF_ERROR;
         }
