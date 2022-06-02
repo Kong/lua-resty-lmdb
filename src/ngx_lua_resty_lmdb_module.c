@@ -3,6 +3,13 @@
 #include <ngx_lua_resty_lmdb_module.h>
 
 
+#define ENC_KEY_LEN         32
+
+#ifndef EVP_DIGEST_CONSTANT
+#define EVP_DIGEST_CONSTANT "konglmdb"
+#endif
+
+
 static void *ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle);
 static char *ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf);
 static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle);
@@ -198,7 +205,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
 
     if (cipher != NULL) {
         enckey.mv_data = keybuf;
-        enckey.mv_size = 32;
+        enckey.mv_size = ENC_KEY_LEN;
 
         rc = get_digest_key(&lcf->key_data, &enckey);
         if (rc != 0) {
