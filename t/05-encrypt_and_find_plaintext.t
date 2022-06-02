@@ -42,14 +42,25 @@ __DATA__
             local l = require("resty.lmdb")
 
             ngx.say(l.set("test", "encrypted"))
+
             local file1 = io.input("/tmp/test5.mdb/data.mdb")
             local str = io.read("*a")
-            local _,q,p
-            _, q = string.find(str, 'test')
-            if q == nil then ngx.say("can not find plaintxt key") else ngx.say("can find plaintxt key") end
-            _, p = string.find(str, 'encrypted')
-            if p == nil then ngx.say("can not find plaintxt value") else ngx.say("can find plaintxt value") end
-            local ret = io.close(file1);
+
+            local _, q = string.find(str, 'test')
+            if q == nil then
+                ngx.say("can not find plaintxt key")
+            else
+                ngx.say("can find plaintxt key")
+            end
+
+            local _, p = string.find(str, 'encrypted')
+            if p == nil then
+                ngx.say("can not find plaintxt value")
+            else
+                ngx.say("can find plaintxt value")
+            end
+
+            io.close(file1);
 
             ngx.say(l.get("test"))
             ngx.say(l.get("test_not_exist"))
@@ -129,14 +140,26 @@ nil
             local l = require("resty.lmdb")
 
             ngx.say(l.set("test", "unenc"))
+
             local file1 = io.input("/tmp/test6.mdb/data.mdb")
             local str = io.read("*a")
-            local _,q,p
-            _, q = string.find(str, 'test')
-            if q == nil then ngx.say("can not find plaintxt key") else ngx.say("can find plaintxt key") end
-            _, p = string.find(str, 'unenc')
-            if p == nil then ngx.say("can not find plaintxt value") else ngx.say("can find plaintxt value") end
-            local ret = io.close(file1);
+
+            local _, q = string.find(str, 'test')
+            if q == nil then
+                ngx.say("can not find plaintxt key")
+            else
+                ngx.say("can find plaintxt key")
+            end
+
+            local _, p = string.find(str, 'unenc')
+            if p == nil then
+                ngx.say("can not find plaintxt value")
+            else
+                ngx.say("can find plaintxt value")
+            end
+
+            io.close(file1);
+
             ngx.say(l.get("test"))
             ngx.say(l.get("test_not_exist"))
         }
