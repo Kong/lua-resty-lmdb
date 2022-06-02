@@ -1,6 +1,4 @@
-#include <openssl/bio.h>
 #include <openssl/evp.h>
-#include <openssl/des.h>
 
 #include <ngx_lua_resty_lmdb_module.h>
 
