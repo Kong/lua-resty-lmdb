@@ -123,8 +123,8 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
         ngx_str_set(&lcf->encryption_type, "aes-256-gcm");
     }
 
-    if (ngx_strcmp(lcf->encryption_type.data, "aes-256-gcm") != 0 &&
-        ngx_strcmp(lcf->encryption_type.data, "chacha20-poly1305") != 0 ) {
+    if (ngx_strcasecmp(lcf->encryption_type.data, "aes-256-gcm") != 0 &&
+        ngx_strcasecmp(lcf->encryption_type.data, "chacha20-poly1305") != 0 ) {
         ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
                 "invalid \"lmdb_encryption_type\": \"%V\"",
                 &lcf->encryption_type);
