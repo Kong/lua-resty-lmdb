@@ -1,17 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-#include <sys/param.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/des.h>
+
 #include <ngx_lua_resty_lmdb_module.h>
-
-#include "lmdb.h"
-
-
-static const EVP_CIPHER *cipher;
 
 
 static void *ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle);
@@ -19,6 +10,9 @@ static char *ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf);
 static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle);
 static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle);
 static void ngx_lua_resty_lmdb_exit_worker(ngx_cycle_t *cycle);
+
+
+static const EVP_CIPHER *cipher;
 
 
 static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
@@ -113,22 +107,29 @@ static char *
 ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 {
     ngx_lua_resty_lmdb_conf_t *lcf = conf;
-    const char*               cipher_type;
 
     ngx_conf_init_size_value(lcf->max_databases, 1);
     /* same as mdb.c DEFAULT_MAPSIZE */
     ngx_conf_init_size_value(lcf->map_size, 1048576);
-    cipher = (EVP_CIPHER *)EVP_aes_256_gcm();
-    if (lcf->encryption_type.data) {
-        cipher_type = (char *)lcf->encryption_type.data;
-        cipher = EVP_get_cipherbyname(cipher_type);
-        if (!cipher || (cipher != (EVP_CIPHER *)EVP_chacha20_poly1305() && cipher != (EVP_CIPHER *)EVP_aes_256_gcm())) {
-            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0, "invalid \"lmdb_encryption_type\": \"%s\"",cipher_type);
+
+    cipher = EVP_aes_256_gcm();
+    if (lcf->encryption_type.data != NULL) {
+        cipher = EVP_get_cipherbyname((char *)lcf->encryption_type.data);
+
+        if (cipher == NULL ||
+            (cipher != (EVP_CIPHER *)EVP_chacha20_poly1305() &&
+             cipher != (EVP_CIPHER *)EVP_aes_256_gcm())) {
+            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+                "invalid \"lmdb_encryption_type\": \"%V\"", &lcf->encryption_type);
+
             return NGX_CONF_ERROR;
         }
 
-        if (!lcf->key_data.data) {
-            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0, "no \"lmdb_encryption_key_data\" is defined when \"lmdb_encryption_type\" is set");
+        if (lcf->key_data.data == NULL) {
+            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+                "no \"lmdb_encryption_key_data\" is defined "
+                "when \"lmdb_encryption_type\" is set");
+
             return NGX_CONF_ERROR;
         }
     }
@@ -151,15 +152,16 @@ static int mcf_str2key(const char *passwd, MDB_val *key)
 {
     unsigned int    size;
     int             rc;
-    EVP_MD_CTX      *mdctx = EVP_MD_CTX_new();
+    EVP_MD_CTX     *mdctx = EVP_MD_CTX_new();
 
     rc = EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
     if (rc) {
-        rc = EVP_DigestUpdate(mdctx, EVP_DIGEST_CONSTANT, sizeof(EVP_DIGEST_CONSTANT));
+        rc = EVP_DigestUpdate(mdctx,
+                EVP_DIGEST_CONSTANT, sizeof(EVP_DIGEST_CONSTANT));
     }
 
     if (rc) {
-        rc = EVP_DigestUpdate(mdctx, passwd, strlen(passwd));
+        rc = EVP_DigestUpdate(mdctx, passwd, ngx_strlen(passwd));
     }
 
     if (rc) {
@@ -173,7 +175,6 @@ static int mcf_str2key(const char *passwd, MDB_val *key)
 
 static int lmcf_encfunc(const MDB_val *src, MDB_val *dst, const MDB_val *key, int encdec)
 {
-
     unsigned char               iv[12];
     int                         ivl, outl, rc;
     mdb_size_t                  *ptr;
