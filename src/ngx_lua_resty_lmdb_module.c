@@ -104,9 +104,6 @@ ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle)
     lcf->max_databases = NGX_CONF_UNSET_SIZE;
     lcf->map_size = NGX_CONF_UNSET_SIZE;
 
-    /* The default encryption mode is aes-256-gcm */
-    ngx_str_set(&lcf->encryption_type, "aes-256-gcm");
-
     return lcf;
 }
 
@@ -120,6 +117,11 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 
     /* same as mdb.c DEFAULT_MAPSIZE */
     ngx_conf_init_size_value(lcf->map_size, 1048576);
+
+    /* The default encryption mode is aes-256-gcm */
+    if (lcf->encryption_type.data == NULL) {
+        ngx_str_set(&lcf->encryption_type, "aes-256-gcm");
+    }
 
     if (ngx_strcmp(lcf->encryption_type.data, "aes-256-gcm") != 0 &&
         ngx_strcmp(lcf->encryption_type.data, "chacha20-poly1305") != 0 ) {
@@ -315,7 +317,7 @@ lmdb_encrypt_func(const MDB_val *src, MDB_val *dst, const MDB_val *key, int encd
         EVP_CIPHER_CTX_set_padding(ctx, 0);
     }
 
-    if (rc && encdec != NULL) {
+    if (rc && !encdec) {
         rc = EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG,
                                  key[2].mv_size, key[2].mv_data);
     }
