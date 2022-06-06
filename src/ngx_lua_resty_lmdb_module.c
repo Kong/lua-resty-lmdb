@@ -1,5 +1,3 @@
-#include <openssl/evp.h>
-
 #include <ngx_lua_resty_lmdb_module.h>
 
 
