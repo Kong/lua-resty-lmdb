@@ -21,6 +21,9 @@ Table of Contents
             * [db\_open](#db_open)
             * [db\_drop](#db_drop)
             * [commit](#commit)
+    * [Directives](#Directives)
+        * [lmdb_encryption_key_data](#lmdb_encryption_key_data)
+        * [lmdb_encryption_type](#lmdb_encryption_type)
     * [Copyright and license](#copyright-and-license)
 
 ## APIs
@@ -164,6 +167,31 @@ output will be inside `txn[1]` and second operation's result will be inside `txn
 In case of any error during the transaction, it will be rolled back and `nil` and
 an string describing the reason of the failure will be returned instead. Accessing the output value
 from the `txn` table when `commit()` returned an error is undefined.
+
+[Back to TOC](#table-of-contents)
+
+## Directives
+
+### lmdb_encryption_key_data
+
+**syntax:** *lmdb_encryption_key_data "YourPassword";*
+
+**context:** *main*
+
+Encrypt the lmdb database. Encryption is enabled only when the lmdb_encryption_key_data is set. The 
+lmdb_encryption_key_data will be used as the key to encrypt lmdb.
+
+[Back to TOC](#table-of-contents)
+
+### lmdb_encryption_type
+
+**syntax:** *lmdb_encryption_type "aes-256-gcm";*
+
+**context:** *main*
+
+Set the lmdb database encryption mode. The default encryption mode is aes-256-gcm. The optional encryption 
+modes are chacha20-poly1305 and aes-256-gcm. Note that lmdb_encryption_type needs to be set only when 
+lmdb_encryption_key_data is set.
 
 [Back to TOC](#table-of-contents)
 

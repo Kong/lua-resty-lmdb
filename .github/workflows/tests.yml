@@ -13,10 +13,12 @@ jobs:
         # TODO: arm64
         # latest and one version older for valgrind
         - nginx: "1.19.3"
+          openssl: "1.1.1n"
           valgrind: "valgrind"
           lua_nginx_module: "v0.10.19"
           lua_resty_core: "v0.1.21"
         - nginx: "1.19.9"
+          openssl: "1.1.1n"
           valgrind: "valgrind"
           lua_nginx_module: "v0.10.20"
           lua_resty_core: "v0.1.22"
@@ -32,7 +34,7 @@ jobs:
       LUA_INCLUDE_DIR: /home/runner/work/cache/luajit21/include/luajit-2.1
       OPENSSL_PREFIX: /home/runner/work/cache/ssl
       # lib64 since openssl 3.0
-      OPENSSL_LIB: /home/runner/work/cache/ssl/lib64
+      OPENSSL_LIB: /home/runner/work/cache/ssl/lib
       OPENSSL_INC: /home/runner/work/cache/ssl/include
       TEST_NGINX_SLEEP: 0.005
       TEST_NGINX_RANDOMIZE: 1
@@ -68,6 +70,7 @@ jobs:
         git clone https://github.com/simpl/ngx_devel_kit.git ./ndk-nginx-module
         git clone https://github.com/openresty/lua-nginx-module.git ./lua-nginx-module -b ${{ matrix.lua_nginx_module }}
         git clone https://github.com/openresty/no-pool-nginx.git ./no-pool-nginx
+        git clone https://github.com/fffonion/lua-resty-openssl ../lua-resty-openssl
         # lua libraries at parent directory of current repository
         popd
         mkdir ../lib
@@ -75,6 +78,14 @@ jobs:
         git clone https://github.com/openresty/lua-resty-lrucache.git ../lua-resty-lrucache
         cp -r ../lua-resty-lrucache/lib/* ../lib/
         find ../lib
+
+    - name: Build OpenSSL
+      run: |
+        if [ "X$OPENSSL_HASH" != "X" ]; then wget https://github.com/openssl/openssl/archive/$OPENSSL_HASH.tar.gz -O - | tar zxf ; pushd openssl-$OPENSSL_HASH/; fi
+        if [ "X$OPENSSL_HASH" = "X" ] ; then wget https://www.openssl.org/source/openssl-${{ matrix.openssl }}.tar.gz -O - | tar zxf -; pushd openssl-${{ matrix.openssl }}/; fi
+        if [ ! -e $OPENSSL_PREFIX/include ]; then ./config shared -d --prefix=$OPENSSL_PREFIX -DPURIFY > build.log 2>&1 || (cat build.log && exit 1); fi
+        if [ ! -e $OPENSSL_PREFIX/include ]; then make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1); fi
+        if [ ! -e $OPENSSL_PREFIX/include ]; then sudo make PATH=$PATH install_sw > build.log 2>&1 || (cat build.log && exit 1); fi
 
     - name: Build LuaJIT
       env:
@@ -104,9 +115,9 @@ jobs:
         export NGX_STREAM_LUA_LOC=$BASE_PATH/../stream-lua-nginx-module
         export
         cd $BASE_PATH
-        if [ ! -e work ]; then ngx-build ${{ matrix.nginx }} --add-module=../ndk-nginx-module --add-module=../lua-nginx-module --add-module=../lua-resty-lmdb/lua-resty-lmdb --with-cc-opt="-I$OPENSSL_INC $NGINX_CC_OPTS" --with-ld-opt="-L$OPENSSL_LIB -Wl,-rpath,$OPENSSL_LIB" --with-debug > build.log 2>&1 || (cat build.log && exit 1); fi
+        if [ ! -e work ]; then ngx-build ${{ matrix.nginx }} --add-module=../ndk-nginx-module --add-module=../lua-nginx-module --add-module=../lua-resty-lmdb/lua-resty-lmdb --with-http_ssl_module --with-stream --with-stream_ssl_module --with-stream_ssl_preread_module --with-cc-opt="-I$OPENSSL_INC $NGINX_CC_OPTS" --with-ld-opt="-L$OPENSSL_LIB -Wl,-rpath,$OPENSSL_LIB" --with-debug > build.log 2>&1 || (cat build.log && exit 1); fi
         nginx -V
-        ldd `which nginx`|grep -E 'luajit|pcre'
+        ldd `which nginx`|grep -E 'luajit|ssl|pcre'
 
     - name: Run Test
       run: |

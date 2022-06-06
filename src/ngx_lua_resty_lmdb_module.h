@@ -13,6 +13,9 @@ struct ngx_lua_resty_lmdb_conf_s {
     size_t       map_size;
     MDB_env     *env;
     MDB_txn     *ro_txn;
+
+    ngx_str_t    key_data;
+    ngx_str_t    encryption_type;
 };
 
 
@@ -23,7 +26,7 @@ typedef enum {
     NGX_LMDB_OP_GET = 0,
     NGX_LMDB_OP_SET,
     NGX_LMDB_OP_DB_OPEN,
-    NGX_LMDB_OP_DB_DROP,
+    NGX_LMDB_OP_DB_DROP
 } ngx_lua_resty_lmdb_operation_e;
 
 
