@@ -315,8 +315,8 @@ lmdb_encrypt_func(const MDB_val *src, MDB_val *dst, const MDB_val *key, int encd
 
     ptr = key[1].mv_data;
     ivl = ptr[0] & 0xffffffff;
-    ngx_memcpy(iv, &ivl, 4);
-    ngx_memcpy(iv + 4, ptr + 1, sizeof(mdb_size_t));
+    ngx_memcpy(iv, &ivl, sizeof(int));
+    ngx_memcpy(iv + sizeof(int), ptr + 1, sizeof(mdb_size_t));
 
     rc = EVP_CipherInit_ex(ctx, cipher, NULL, key[0].mv_data, iv, encdec);
     if (rc) {
