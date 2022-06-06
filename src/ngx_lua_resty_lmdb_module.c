@@ -226,7 +226,10 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
             return NGX_ERROR;
         }
 
-        /* TODO: destroy data*/
+        /* destroy data*/
+        ngx_memzero(lcf->key_data.data, lcf->key_data.len);
+        ngx_memzero(lcf->encryption_type.data, lcf->encryption_type.len);
+
         ngx_str_null(&lcf->key_data);
         ngx_str_null(&lcf->encryption_type);
     }
