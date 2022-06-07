@@ -13,14 +13,14 @@ our $MainConfig = qq{
     lmdb_environment_path /tmp/test7.mdb;
     lmdb_map_size 5m;
     lmdb_encryption_key /etc/hostname;
-    lmdb_encryption_type "AES-256-GCM";
+    lmdb_encryption_mode "AES-256-GCM";
 };
 
 our $MainConfig1 = qq{
     lmdb_environment_path /tmp/test7.mdb;
     lmdb_map_size 5m;
     lmdb_encryption_key /etc/hosts;
-    lmdb_encryption_type "AES-256-GCM";
+    lmdb_encryption_mode "AES-256-GCM";
 };
 
 our $HttpConfig = qq{

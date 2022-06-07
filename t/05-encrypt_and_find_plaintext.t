@@ -13,7 +13,7 @@ our $MainConfig = qq{
     lmdb_environment_path /tmp/test5.mdb;
     lmdb_map_size 5m;
     lmdb_encryption_key /etc/hostname;
-    lmdb_encryption_type "chacha20-poly1305";
+    lmdb_encryption_mode "chacha20-poly1305";
 };
 
 our $MainConfig1 = qq{
