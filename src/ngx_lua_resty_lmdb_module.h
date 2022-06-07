@@ -16,7 +16,7 @@ struct ngx_lua_resty_lmdb_conf_s {
 
     ngx_str_t    key_file;
     ngx_str_t    key_data;
-    ngx_str_t    encryption_type;
+    ngx_str_t    encryption_mode;
 };
 
 

@@ -53,11 +53,11 @@ static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
       offsetof(ngx_lua_resty_lmdb_conf_t, key_file),
       NULL },
 
-    { ngx_string("lmdb_encryption_type"),
+    { ngx_string("lmdb_encryption_mode"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
       0,
-      offsetof(ngx_lua_resty_lmdb_conf_t, encryption_type),
+      offsetof(ngx_lua_resty_lmdb_conf_t, encryption_mode),
       NULL },
 
       ngx_null_command
@@ -127,18 +127,18 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     ngx_conf_init_size_value(lcf->map_size, 1048576);
 
     /* The default encryption mode is aes-256-gcm */
-    if (lcf->encryption_type.data == NULL) {
-        ngx_str_set(&lcf->encryption_type, "aes-256-gcm");
+    if (lcf->encryption_mode.data == NULL) {
+        ngx_str_set(&lcf->encryption_mode, "aes-256-gcm");
     }
 
     if (ngx_strcasecmp(
-            lcf->encryption_type.data, (u_char*)"aes-256-gcm") != 0 &&
+            lcf->encryption_mode.data, (u_char*)"aes-256-gcm") != 0 &&
         ngx_strcasecmp(
-            lcf->encryption_type.data, (u_char*)"chacha20-poly1305") != 0 ) {
+            lcf->encryption_mode.data, (u_char*)"chacha20-poly1305") != 0 ) {
 
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                "invalid \"lmdb_encryption_type\": \"%V\"",
-                &lcf->encryption_type);
+                "invalid \"lmdb_encryption_mode\": \"%V\"",
+                &lcf->encryption_mode);
 
         return NGX_CONF_ERROR;
     }
@@ -203,12 +203,12 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     }
 
     if (lcf->key_data.data != NULL) {
-        cipher = EVP_get_cipherbyname((char *)lcf->encryption_type.data);
+        cipher = EVP_get_cipherbyname((char *)lcf->encryption_mode.data);
 
         if (cipher == NULL ) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                 "init \"lmdb_encryption\": \"%V\" failed",
-                &lcf->encryption_type);
+                &lcf->encryption_mode);
 
             return NGX_CONF_ERROR;
         }
@@ -292,10 +292,10 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
 
         /* destroy data*/
         ngx_explicit_memzero(lcf->key_data.data, lcf->key_data.len);
-        ngx_explicit_memzero(lcf->encryption_type.data, lcf->encryption_type.len);
+        ngx_explicit_memzero(lcf->encryption_mode.data, lcf->encryption_mode.len);
 
         ngx_str_null(&lcf->key_data);
-        ngx_str_null(&lcf->encryption_type);
+        ngx_str_null(&lcf->encryption_mode);
     }
 
     rc = mdb_env_open(lcf->env, (const char *) lcf->env_path->name.data, 0, 0600);
