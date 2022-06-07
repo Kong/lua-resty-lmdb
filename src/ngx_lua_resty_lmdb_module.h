@@ -14,6 +14,7 @@ struct ngx_lua_resty_lmdb_conf_s {
     MDB_env     *env;
     MDB_txn     *ro_txn;
 
+    ngx_str_t    key_file;
     ngx_str_t    key_data;
     ngx_str_t    encryption_type;
 };

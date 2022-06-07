@@ -46,11 +46,11 @@ static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
       offsetof(ngx_lua_resty_lmdb_conf_t, map_size),
       NULL },
 
-    { ngx_string("lmdb_encryption_key_data"),
+    { ngx_string("lmdb_encryption_key"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
       0,
-      offsetof(ngx_lua_resty_lmdb_conf_t, key_data),
+      offsetof(ngx_lua_resty_lmdb_conf_t, key_file),
       NULL },
 
     { ngx_string("lmdb_encryption_type"),
@@ -114,7 +114,12 @@ ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle)
 static char *
 ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 {
-    ngx_lua_resty_lmdb_conf_t *lcf = conf;
+    ngx_lua_resty_lmdb_conf_t     *lcf = conf;
+    ngx_file_t                     file;
+    ngx_file_info_t                fi;
+    size_t                         size;
+    ssize_t                        n;
+    u_char                        *buf;
 
     ngx_conf_init_size_value(lcf->max_databases, 1);
 
@@ -136,6 +141,63 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
                 &lcf->encryption_type);
 
         return NGX_CONF_ERROR;
+    }
+
+    if (lcf->key_file.data != NULL) {
+        if (ngx_conf_full_name(cycle, &lcf->key_file, 1) != NGX_OK) {
+            return NGX_CONF_ERROR;
+        }
+
+        ngx_memzero(&file, sizeof(ngx_file_t));
+        file.name = lcf->key_file;
+        file.log = cycle->log;
+
+        file.fd = ngx_open_file(file.name.data, NGX_FILE_RDONLY,
+                                NGX_FILE_OPEN, 0);
+
+        if (file.fd == NGX_INVALID_FILE) {
+            ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
+                          ngx_open_file_n " \"%V\" failed", &file.name);
+            return NGX_CONF_ERROR;
+        }
+
+        if (ngx_fd_info(file.fd, &fi) == NGX_FILE_ERROR) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                          ngx_fd_info_n " \"%V\" failed", &file.name);
+            ngx_close_file(file.fd);
+            return NGX_CONF_ERROR;
+        }
+
+        size = ngx_file_size(&fi);
+
+        buf = ngx_pcalloc(cycle->pool, size);
+        if (buf == NULL) {
+            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+                          "allocate key memory failed");
+            return NGX_CONF_ERROR;
+        }
+
+        n = ngx_read_file(&file, buf, size, 0);
+
+        if (n == NGX_ERROR) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                          ngx_read_file_n " \"%V\" failed", &file.name);
+            ngx_close_file(file.fd);
+            return NGX_CONF_ERROR;
+        }
+
+        if ((size_t) n != size) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                          ngx_read_file_n " \"%V\" returned only "
+                          "%z bytes instead of %uz", &file.name, n, size);
+            ngx_close_file(file.fd);
+            return NGX_CONF_ERROR;
+        }
+
+        lcf->key_data.data = buf;
+        lcf->key_data.len = size;
+
+        ngx_close_file(file.fd);
     }
 
     if (lcf->key_data.data != NULL) {
@@ -227,8 +289,8 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         }
 
         /* destroy data*/
-        ngx_memzero(lcf->key_data.data, lcf->key_data.len);
-        ngx_memzero(lcf->encryption_type.data, lcf->encryption_type.len);
+        ngx_explicit_memzero(lcf->key_data.data, lcf->key_data.len);
+        ngx_explicit_memzero(lcf->encryption_type.data, lcf->encryption_type.len);
 
         ngx_str_null(&lcf->key_data);
         ngx_str_null(&lcf->encryption_type);
