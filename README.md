@@ -23,7 +23,7 @@ Table of Contents
             * [commit](#commit)
     * [Directives](#Directives)
         * [lmdb_encryption_key](#lmdb_encryption_key)
-        * [lmdb_encryption_type](#lmdb_encryption_type)
+        * [lmdb_encryption_mode](#lmdb_encryption_mode)
     * [Copyright and license](#copyright-and-license)
 
 ## APIs
@@ -178,20 +178,20 @@ from the `txn` table when `commit()` returned an error is undefined.
 
 **context:** *main*
 
-Encrypt the lmdb database. Encryption is enabled only when the lmdb_encryption_key is set. The
+Encrypt the lmdb database. Encryption is enabled only when the `lmdb_encryption_key` is set. The
 content of keyfile will be used as the key to encrypt lmdb.
 
 [Back to TOC](#table-of-contents)
 
-### lmdb_encryption_type
+### lmdb_encryption_mode
 
-**syntax:** *lmdb_encryption_type "aes-256-gcm";*
+**syntax:** *lmdb_encryption_mode "aes-256-gcm";*
 
 **context:** *main*
 
-Set the lmdb database encryption mode. The default encryption mode is aes-256-gcm. The optional encryption
-modes are chacha20-poly1305 and aes-256-gcm. Note that lmdb_encryption_type needs to be set only when
-lmdb_encryption_key is set.
+Set the lmdb database encryption mode. The default encryption mode is "aes-256-gcm". The optional encryption
+modes are "chacha20-poly1305" and "aes-256-gcm". Note that `lmdb_encryption_mode` needs to be set only when
+`lmdb_encryption_key` is set.
 
 [Back to TOC](#table-of-contents)
 
