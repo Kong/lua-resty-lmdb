@@ -175,7 +175,8 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 
         if (size > MAX_BUF_LEN) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                          "\"%V\" must be less than 256 bytes", &file.name);
+                          "\"%V\" must be less than %d bytes",
+                          &file.name, MAX_BUF_LEN);
             ngx_close_file(file.fd);
             return NGX_CONF_ERROR;
         }
