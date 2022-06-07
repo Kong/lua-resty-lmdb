@@ -1,6 +1,7 @@
 #include <ngx_lua_resty_lmdb_module.h>
 
 
+#define MAX_BUF_LEN         256
 #define ENC_KEY_LEN         32
 
 #ifndef EVP_DIGEST_CONSTANT
@@ -171,6 +172,13 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
         }
 
         size = ngx_file_size(&fi);
+
+        if (size > MAX_BUF_LEN) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                          "\"%V\" must be less than 256 bytes", &file.name);
+            ngx_close_file(file.fd);
+            return NGX_CONF_ERROR;
+        }
 
         buf = ngx_pcalloc(cycle->pool, size);
         if (buf == NULL) {
