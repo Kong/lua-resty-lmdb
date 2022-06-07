@@ -179,7 +179,7 @@ from the `txn` table when `commit()` returned an error is undefined.
 **context:** *main*
 
 Encrypt the lmdb database. Encryption is enabled only when the `lmdb_encryption_key` is set. The
-content of keyfile will be used as the key to encrypt lmdb.
+content of keyfile will be used to derive a the key to encrypt lmdb.
 
 [Back to TOC](#table-of-contents)
 
