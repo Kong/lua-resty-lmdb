@@ -145,6 +145,8 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 
     if (lcf->key_file.data != NULL) {
         if (ngx_conf_full_name(cycle, &lcf->key_file, 1) != NGX_OK) {
+            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+                          "search \"%V\" failed", &lcf->key_file);
             return NGX_CONF_ERROR;
         }
 
