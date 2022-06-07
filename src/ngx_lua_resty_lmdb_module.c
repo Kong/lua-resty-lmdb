@@ -185,6 +185,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
         if (buf == NULL) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                           "allocate key memory failed");
+            ngx_close_file(file.fd);
             return NGX_CONF_ERROR;
         }
 
