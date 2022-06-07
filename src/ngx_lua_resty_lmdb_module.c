@@ -136,7 +136,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
         ngx_strcasecmp(
             lcf->encryption_type.data, (u_char*)"chacha20-poly1305") != 0 ) {
 
-        ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+        ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                 "invalid \"lmdb_encryption_type\": \"%V\"",
                 &lcf->encryption_type);
 
@@ -145,7 +145,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 
     if (lcf->key_file.data != NULL) {
         if (ngx_conf_full_name(cycle, &lcf->key_file, 1) != NGX_OK) {
-            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                           "search \"%V\" failed", &lcf->key_file);
             return NGX_CONF_ERROR;
         }
@@ -158,7 +158,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
                                 NGX_FILE_OPEN, 0);
 
         if (file.fd == NGX_INVALID_FILE) {
-            ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
                           ngx_open_file_n " \"%V\" failed", &file.name);
             return NGX_CONF_ERROR;
         }
@@ -174,7 +174,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 
         buf = ngx_pcalloc(cycle->pool, size);
         if (buf == NULL) {
-            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                           "allocate key memory failed");
             return NGX_CONF_ERROR;
         }
@@ -206,7 +206,7 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
         cipher = EVP_get_cipherbyname((char *)lcf->encryption_type.data);
 
         if (cipher == NULL ) {
-            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                 "init \"lmdb_encryption\": \"%V\" failed",
                 &lcf->encryption_type);
 
