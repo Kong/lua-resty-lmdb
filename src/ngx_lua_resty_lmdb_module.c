@@ -1,7 +1,7 @@
 #include <ngx_lua_resty_lmdb_module.h>
 
 
-#define MAX_BUF_LEN         256
+#define MAX_BUF_LEN         512
 #define ENC_KEY_LEN         32
 
 #ifndef EVP_DIGEST_CONSTANT
