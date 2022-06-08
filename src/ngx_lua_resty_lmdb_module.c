@@ -1,6 +1,7 @@
 #include <ngx_lua_resty_lmdb_module.h>
 
 
+#define MAX_BUF_LEN         512
 #define ENC_KEY_LEN         32
 
 #ifndef EVP_DIGEST_CONSTANT
@@ -46,18 +47,18 @@ static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
       offsetof(ngx_lua_resty_lmdb_conf_t, map_size),
       NULL },
 
-    { ngx_string("lmdb_encryption_key_data"),
+    { ngx_string("lmdb_encryption_key"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
       0,
-      offsetof(ngx_lua_resty_lmdb_conf_t, key_data),
+      offsetof(ngx_lua_resty_lmdb_conf_t, key_file),
       NULL },
 
-    { ngx_string("lmdb_encryption_type"),
+    { ngx_string("lmdb_encryption_mode"),
       NGX_MAIN_CONF|NGX_DIRECT_CONF|NGX_CONF_TAKE1,
       ngx_conf_set_str_slot,
       0,
-      offsetof(ngx_lua_resty_lmdb_conf_t, encryption_type),
+      offsetof(ngx_lua_resty_lmdb_conf_t, encryption_mode),
       NULL },
 
       ngx_null_command
@@ -114,7 +115,12 @@ ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle)
 static char *
 ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 {
-    ngx_lua_resty_lmdb_conf_t *lcf = conf;
+    ngx_lua_resty_lmdb_conf_t     *lcf = conf;
+    ngx_file_t                     file;
+    ngx_file_info_t                fi;
+    size_t                         size;
+    ssize_t                        n;
+    u_char                        *buf;
 
     ngx_conf_init_size_value(lcf->max_databases, 1);
 
@@ -122,29 +128,97 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     ngx_conf_init_size_value(lcf->map_size, 1048576);
 
     /* The default encryption mode is aes-256-gcm */
-    if (lcf->encryption_type.data == NULL) {
-        ngx_str_set(&lcf->encryption_type, "aes-256-gcm");
+    if (lcf->encryption_mode.data == NULL) {
+        ngx_str_set(&lcf->encryption_mode, "aes-256-gcm");
     }
 
     if (ngx_strcasecmp(
-            lcf->encryption_type.data, (u_char*)"aes-256-gcm") != 0 &&
+            lcf->encryption_mode.data, (u_char*)"aes-256-gcm") != 0 &&
         ngx_strcasecmp(
-            lcf->encryption_type.data, (u_char*)"chacha20-poly1305") != 0 ) {
+            lcf->encryption_mode.data, (u_char*)"chacha20-poly1305") != 0 ) {
 
-        ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
-                "invalid \"lmdb_encryption_type\": \"%V\"",
-                &lcf->encryption_type);
+        ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                "invalid \"lmdb_encryption_mode\": \"%V\"",
+                &lcf->encryption_mode);
 
         return NGX_CONF_ERROR;
     }
 
+    if (lcf->key_file.data != NULL) {
+        if (ngx_conf_full_name(cycle, &lcf->key_file, 1) != NGX_OK) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                          "search \"%V\" failed", &lcf->key_file);
+            return NGX_CONF_ERROR;
+        }
+
+        ngx_memzero(&file, sizeof(ngx_file_t));
+        file.name = lcf->key_file;
+        file.log = cycle->log;
+
+        file.fd = ngx_open_file(file.name.data, NGX_FILE_RDONLY,
+                                NGX_FILE_OPEN, 0);
+
+        if (file.fd == NGX_INVALID_FILE) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                          ngx_open_file_n " \"%V\" failed", &file.name);
+            return NGX_CONF_ERROR;
+        }
+
+        if (ngx_fd_info(file.fd, &fi) == NGX_FILE_ERROR) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                          ngx_fd_info_n " \"%V\" failed", &file.name);
+            ngx_close_file(file.fd);
+            return NGX_CONF_ERROR;
+        }
+
+        size = ngx_file_size(&fi);
+
+        if (size > MAX_BUF_LEN) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                          "\"%V\" must be less than %d bytes",
+                          &file.name, MAX_BUF_LEN);
+            ngx_close_file(file.fd);
+            return NGX_CONF_ERROR;
+        }
+
+        buf = ngx_pcalloc(cycle->pool, size);
+        if (buf == NULL) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                          "allocate key memory failed");
+            ngx_close_file(file.fd);
+            return NGX_CONF_ERROR;
+        }
+
+        n = ngx_read_file(&file, buf, size, 0);
+
+        if (n == NGX_ERROR) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                          ngx_read_file_n " \"%V\" failed", &file.name);
+            ngx_close_file(file.fd);
+            return NGX_CONF_ERROR;
+        }
+
+        if ((size_t) n != size) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                          ngx_read_file_n " \"%V\" returned only "
+                          "%z bytes instead of %uz", &file.name, n, size);
+            ngx_close_file(file.fd);
+            return NGX_CONF_ERROR;
+        }
+
+        lcf->key_data.data = buf;
+        lcf->key_data.len = size;
+
+        ngx_close_file(file.fd);
+    }
+
     if (lcf->key_data.data != NULL) {
-        cipher = EVP_get_cipherbyname((char *)lcf->encryption_type.data);
+        cipher = EVP_get_cipherbyname((char *)lcf->encryption_mode.data);
 
         if (cipher == NULL ) {
-            ngx_log_error(NGX_LOG_EMERG, cycle->log, 0,
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                 "init \"lmdb_encryption\": \"%V\" failed",
-                &lcf->encryption_type);
+                &lcf->encryption_mode);
 
             return NGX_CONF_ERROR;
         }
@@ -227,11 +301,11 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         }
 
         /* destroy data*/
-        ngx_memzero(lcf->key_data.data, lcf->key_data.len);
-        ngx_memzero(lcf->encryption_type.data, lcf->encryption_type.len);
+        ngx_explicit_memzero(lcf->key_data.data, lcf->key_data.len);
+        ngx_explicit_memzero(lcf->encryption_mode.data, lcf->encryption_mode.len);
 
         ngx_str_null(&lcf->key_data);
-        ngx_str_null(&lcf->encryption_type);
+        ngx_str_null(&lcf->encryption_mode);
     }
 
     rc = mdb_env_open(lcf->env, (const char *) lcf->env_path->name.data, 0, 0600);
