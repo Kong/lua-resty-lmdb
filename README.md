@@ -179,6 +179,8 @@ from the `txn` table when `commit()` returned an error is undefined.
 
 **syntax:** *lmdb_environment_path path;*
 
+Set the directory in which the LMDB database files reside.
+
 **context:** *main*
 
 [Back to TOC](#table-of-contents)
@@ -189,6 +191,8 @@ from the `txn` table when `commit()` returned an error is undefined.
 
 **context:** *main*
 
+Set the maximum number of named databases, the default value is `1`.
+
 [Back to TOC](#table-of-contents)
 
 ### lmdb_map_size
@@ -196,6 +200,8 @@ from the `txn` table when `commit()` returned an error is undefined.
 **syntax:** *lmdb_map_size number;*
 
 **context:** *main*
+
+Set the size of the memory map, the default value is `1048576`(1MB).
 
 [Back to TOC](#table-of-contents)
 
