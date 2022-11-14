@@ -179,9 +179,9 @@ from the `txn` table when `commit()` returned an error is undefined.
 
 **syntax:** *lmdb_environment_path path;*
 
-Set the directory in which the LMDB database files reside.
-
 **context:** *main*
+
+Set the directory in which the LMDB database files reside.
 
 [Back to TOC](#table-of-contents)
 
