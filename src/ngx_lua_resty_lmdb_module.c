@@ -255,12 +255,15 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
     }
 
 #if defined(HAVE_PRIVILEGED_PROCESS_PATCH) && !NGX_WIN32
-    if (ngx_process == NGX_PROCESS_HELPER) {
-        if (ngx_is_privileged_agent) {
-            ngx_file_info_t  fi;
+    if (ngx_process == NGX_PROCESS_HELPER && ngx_is_privileged_agent) {
+        int               i;
+        ngx_file_info_t  fi;
 
-            if (ngx_file_info(lcf->env_path->name.data, &fi) == NGX_FILE_ERROR) {
+        for (i = 0; i < 10; i++) {
+            if (ngx_file_info(lcf->env_path->name.data, &fi) == 0) {
+                break;
             }
+            ngx_msleep(1);
         }
     }
 #endif
