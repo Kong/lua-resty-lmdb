@@ -254,6 +254,17 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         return NGX_OK;
     }
 
+#if defined(HAVE_PRIVILEGED_PROCESS_PATCH) && !NGX_WIN32
+    if (ngx_process == NGX_PROCESS_HELPER) {
+        if (ngx_is_privileged_agent) {
+            ngx_file_info_t  fi;
+
+            if (ngx_file_info(lcf->env_path->name.data, &fi) == NGX_FILE_ERROR) {
+            }
+        }
+    }
+#endif
+
     rc = mdb_env_create(&lcf->env);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
