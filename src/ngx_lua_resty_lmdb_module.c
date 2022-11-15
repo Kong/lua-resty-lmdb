@@ -261,6 +261,8 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
 
         for (i = 0; i < 10; i++) {
             if (ngx_file_info(lcf->env_path->name.data, &fi) == 0) {
+                ngx_log_debug0(NGX_LOG_DEBUG_CORE, cycle->log, 0,
+                               "LMDB has been created");
                 break;
             }
             ngx_msleep(1);
