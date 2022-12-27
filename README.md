@@ -22,6 +22,9 @@ Table of Contents
             * [db\_drop](#db_drop)
             * [commit](#commit)
     * [Directives](#Directives)
+        * [lmdb_environment_path](#lmdb_environment_path)
+        * [lmdb_max_databases](#lmdb_max_databases)
+        * [lmdb_map_size](#lmdb_map_size)
         * [lmdb_encryption_key](#lmdb_encryption_key)
         * [lmdb_encryption_mode](#lmdb_encryption_mode)
     * [Copyright and license](#copyright-and-license)
@@ -171,6 +174,36 @@ from the `txn` table when `commit()` returned an error is undefined.
 [Back to TOC](#table-of-contents)
 
 ## Directives
+
+### lmdb_environment_path
+
+**syntax:** *lmdb_environment_path path;*
+
+**context:** *main*
+
+Set the directory in which the LMDB database files reside.
+
+[Back to TOC](#table-of-contents)
+
+### lmdb_max_databases
+
+**syntax:** *lmdb_max_databases number;*
+
+**context:** *main*
+
+Set the maximum number of named databases, the default value is `1`.
+
+[Back to TOC](#table-of-contents)
+
+### lmdb_map_size
+
+**syntax:** *lmdb_map_size number;*
+
+**context:** *main*
+
+Set the size of the memory map, the default value is `1048576`(1MB).
+
+[Back to TOC](#table-of-contents)
 
 ### lmdb_encryption_key
 
