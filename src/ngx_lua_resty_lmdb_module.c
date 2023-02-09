@@ -430,7 +430,6 @@ typedef struct {
     size_t          last_txnid;      /**< ID of the last committed transaction */
     unsigned int    max_readers;     /**< max reader slots in the environment */
     unsigned int    num_readers;     /**< max reader slots used in the environment */
-    size_t          last_txnid;      /**< ID of the last committed transaction */
 } ngx_lua_resty_lmdb_ffi_statu_t;
 
 
