@@ -20,9 +20,9 @@ ffi.cdef([[
         size_t          last_txnid;      /**< ID of the last committed transaction */
         unsigned int    max_readers;     /**< max reader slots in the environment */
         unsigned int    num_readers;     /**< max reader slots used in the environment */
-    } ngx_lua_resty_lmdb_ffi_statu_t;
+    } ngx_lua_resty_lmdb_ffi_status_t;
 
-    int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_statu_t *lst, const char **err);    
+    int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_status_t *lst, char **err);    
 ]])
 
 local transaction = require("resty.lmdb.transaction")
@@ -72,20 +72,24 @@ end
 
 
 function _M.get_env_info()
-    local env_status = ffi_new("ngx_lua_resty_lmdb_ffi_statu_t[1]")
+    local env_status = ffi_new("ngx_lua_resty_lmdb_ffi_status_t[1]")
     local ret = C.ngx_lua_resty_lmdb_ffi_env_info(env_status, err_ptr)
     if ret == NGX_ERROR then
         return nil, ffi_string(err_ptr[0])
     end
 
+    local c_size_t_type = ffi.typeof("size_t")
+    local c_unsigned_int_type = ffi.typeof("unsigned int")
+
     return {
-        map_size = env_status.map_size,
-        page_size = env_status.page_size,
-        max_map_size = env_status.max_map_size,
-        used_pages = env_status.used_pages,
-        last_txnid = env_status.last_txnid,
-        max_readers = env_status.max_readers,
-        num_readers = env_status.num_readers,
+        map_size = tonumber(env_status[0].map_size),
+        page_size = tonumber(env_status[0].page_size),
+        max_map_size = tonumber(env_status[0].max_map_size),
+        max_pages = tonumber(env_status[0].max_map_size) / tonumber(env_status[0].page_size),
+        used_pages = tonumber(env_status[0].used_pages),
+        last_txnid = tonumber(env_status[0].last_txnid),
+        max_readers = tonumber(env_status[0].max_readers),
+        num_readers = tonumber(env_status[0].num_readers),
     }
 end
 
