@@ -78,9 +78,6 @@ function _M.get_env_info()
         return nil, ffi_string(err_ptr[0])
     end
 
-    local c_size_t_type = ffi.typeof("size_t")
-    local c_unsigned_int_type = ffi.typeof("unsigned int")
-
     return {
         map_size = tonumber(env_status[0].map_size),
         page_size = tonumber(env_status[0].page_size),
