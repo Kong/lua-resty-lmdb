@@ -422,4 +422,49 @@ lmdb_encrypt_func(const MDB_val *src, MDB_val *dst, const MDB_val *key, int encd
     return rc == 0;
 }
 
+typedef struct {
+    size_t          map_size;        /**< Size of the data memory map */
+    unsigned int    page_size;       /**< Size of a database page. */
+    unsigned int    max_pages;
+    unsigned int    used_pages;
+    size_t          last_txnid;      /**< ID of the last committed transaction */
+    unsigned int    max_readers;     /**< max reader slots in the environment */
+    unsigned int    num_readers;     /**< max reader slots used in the environment */
+    size_t          last_txnid;      /**< ID of the last committed transaction */
+} ngx_lua_resty_lmdb_ffi_statu_t;
 
+
+int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_statu_t *lst, const char **err)
+{
+    ngx_lua_resty_lmdb_conf_t      *lcf;
+    MDB_stat                        mst;
+    MDB_envinfo                     mei;
+
+    lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(ngx_cycle->conf_ctx,
+                                                     ngx_lua_resty_lmdb_module);
+
+    if (lcf == NULL || lcf->env == NULL) {
+        *err = "no LMDB environment defined";
+        return NGX_ERROR;
+    }
+
+    if (mdb_env_stat(lcf->env, &mst)) {
+        *err = "mdb_env_stat failed";
+        return NGX_ERROR;
+    }
+
+    if (mdb_env_info(lcf->env, &mei)) {
+        *err = "mdb_env_info failed";
+        return NGX_ERROR;
+    }
+
+    lst->map_size = mei.me_mapsize;
+    lst->page_size = mst.ms_psize;
+    lst->max_pages = mei.me_mapsize / mst.ms_psize;
+    lst->used_pages = mei.me_last_pgno+1;
+    lst->last_txnid = mei.me_last_txnid;
+    lst->max_readers = mei.me_maxreaders;
+    lst->num_readers = mei.me_numreaders;
+
+    return NGX_OK;
+}
