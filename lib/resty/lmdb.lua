@@ -16,8 +16,6 @@ ffi.cdef([[
         size_t          map_size;        /**< Size of the data memory map */
         unsigned int    page_size;       /**< Size of a database page. */
         size_t          max_map_size;    /**< Size of the data memory map */
-        unsigned int    page_size;       /**< Size of a database page.
-                                            This is currently the same for all databases. */
         unsigned int    used_pages;
         size_t          last_txnid;      /**< ID of the last committed transaction */
         unsigned int    max_readers;     /**< max reader slots in the environment */
@@ -74,7 +72,7 @@ end
 
 
 function _M.get_env_info()
-    local env_status = ffi_new("ngx_lua_resty_lmdb_operation_t[1]")
+    local env_status = ffi_new("ngx_lua_resty_lmdb_ffi_statu_t[1]")
     local ret = C.ngx_lua_resty_lmdb_ffi_env_info(env_status, err_ptr)
     if ret == NGX_ERROR then
         return nil, ffi_string(err_ptr[0])
@@ -84,7 +82,6 @@ function _M.get_env_info()
         map_size = env_status.map_size,
         page_size = env_status.page_size,
         max_map_size = env_status.max_map_size,
-        page_size = env_status.page_size,
         used_pages = env_status.used_pages,
         last_txnid = env_status.last_txnid,
         max_readers = env_status.max_readers,
