@@ -425,7 +425,9 @@ lmdb_encrypt_func(const MDB_val *src, MDB_val *dst, const MDB_val *key, int encd
 typedef struct {
     size_t          map_size;        /**< Size of the data memory map */
     unsigned int    page_size;       /**< Size of a database page. */
-    unsigned int    max_pages;
+    size_t          max_map_size;    /**< Size of the data memory map */
+    unsigned int    page_size;       /**< Size of a database page.
+                                        This is currently the same for all databases. */
     unsigned int    used_pages;
     size_t          last_txnid;      /**< ID of the last committed transaction */
     unsigned int    max_readers;     /**< max reader slots in the environment */
@@ -459,7 +461,8 @@ int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_statu_t *lst, const c
 
     lst->map_size = mei.me_mapsize;
     lst->page_size = mst.ms_psize;
-    lst->max_pages = mei.me_mapsize / mst.ms_psize;
+    lst->max_map_size = mei.me_mapsize;
+    lst->page_size = mst.ms_psize;
     lst->used_pages = mei.me_last_pgno+1;
     lst->last_txnid = mei.me_last_txnid;
     lst->max_readers = mei.me_maxreaders;

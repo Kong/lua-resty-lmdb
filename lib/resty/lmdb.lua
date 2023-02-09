@@ -15,12 +15,13 @@ ffi.cdef([[
     typedef struct {
         size_t          map_size;        /**< Size of the data memory map */
         unsigned int    page_size;       /**< Size of a database page. */
-        unsigned int    max_pages;
+        size_t          max_map_size;    /**< Size of the data memory map */
+        unsigned int    page_size;       /**< Size of a database page.
+                                            This is currently the same for all databases. */
         unsigned int    used_pages;
         size_t          last_txnid;      /**< ID of the last committed transaction */
         unsigned int    max_readers;     /**< max reader slots in the environment */
         unsigned int    num_readers;     /**< max reader slots used in the environment */
-        size_t          last_txnid;      /**< ID of the last committed transaction */
     } ngx_lua_resty_lmdb_ffi_statu_t;
 
     int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_statu_t *lst, const char **err);    
@@ -82,7 +83,8 @@ function _M.get_env_info()
     return {
         map_size = env_status.map_size,
         page_size = env_status.page_size,
-        max_pages = env_status.max_pages,
+        max_map_size = env_status.max_map_size,
+        page_size = env_status.page_size,
         used_pages = env_status.used_pages,
         last_txnid = env_status.last_txnid,
         max_readers = env_status.max_readers,
