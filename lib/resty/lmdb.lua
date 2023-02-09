@@ -1,6 +1,10 @@
 local ffi = require("ffi")
 local base = require("resty.core.base")
-local table_new = require("table.new")
+
+local C = ffi.C
+local ffi_string = ffi.string
+local ffi_new = ffi.new
+local NGX_ERROR = ngx.ERROR
 
 local err_ptr = base.get_errmsg_ptr()
 
