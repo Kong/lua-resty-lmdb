@@ -39,6 +39,15 @@ struct ngx_lua_resty_lmdb_operation_s {
     unsigned int                    flags; /* SET, DROP */
 };
 
+typedef struct {
+    size_t          map_size;        /**< Size of the data memory map */
+    unsigned int    page_size;       /**< Size of a database page. */
+    size_t          max_map_size;    /**< Size of the data memory map */
+    unsigned int    used_pages;
+    size_t          last_txnid;      /**< ID of the last committed transaction */
+    unsigned int    max_readers;     /**< max reader slots in the environment */
+    unsigned int    num_readers;     /**< max reader slots used in the environment */
+} ngx_lua_resty_lmdb_ffi_statu_t;
 
 typedef struct ngx_lua_resty_lmdb_operation_s ngx_lua_resty_lmdb_operation_t;
 
