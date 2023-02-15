@@ -83,7 +83,7 @@ true
 
 
 
-=== TEST 2: simple get env_info after set() / get()
+=== TEST 3: simple get env_info after set() / get()
 --- http_config eval: $::HttpConfig
 --- main_config eval: $::MainConfig
 --- config
@@ -129,7 +129,7 @@ true
 
 
 
-=== TEST 3: simple get env_info after transaction set() / get()
+=== TEST 4: simple get env_info after transaction set() / get()
 --- http_config eval: $::HttpConfig
 --- main_config eval: $::MainConfig
 --- config

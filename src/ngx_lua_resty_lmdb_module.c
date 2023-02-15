@@ -423,7 +423,7 @@ lmdb_encrypt_func(const MDB_val *src, MDB_val *dst, const MDB_val *key, int encd
 }
 
 
-int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_statu_t *lst, const char **err)
+int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_status_t *lst, const char **err)
 {
     ngx_lua_resty_lmdb_conf_t      *lcf;
     MDB_stat                        mst;
