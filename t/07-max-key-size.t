@@ -47,3 +47,78 @@ value
 [error]
 [warn]
 [crit]
+
+
+=== TEST 2: key size is 511 set() / get()
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            local key = string.rep("a", 511)
+            ngx.say(l.set(key, "value"))
+            ngx.say(l.get(key))
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+value
+--- no_error_log
+[error]
+[warn]
+[crit]
+
+
+=== TEST 3: key size is 1024 set() / get()
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            local key = string.rep("a", 1024)
+            ngx.say(l.set(key, "value"))
+            ngx.say(l.get(key))
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+value
+--- no_error_log
+[error]
+[warn]
+[crit]
+
+
+=== TEST 4: key size is 448 set() / get()
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            local key = string.rep("a", 448)
+            ngx.say(l.set(key, "value"))
+            ngx.say(l.get(key))
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+value
+--- no_error_log
+[error]
+[warn]
+[crit]
+
+
+
