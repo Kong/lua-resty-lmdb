@@ -82,7 +82,7 @@ do
         if key and #key > MAX_KEY_SIZE then
             sha256:reset()
             sha256:update(key)
-            return sha256:final(key)
+            return sha256:final()
         end
 
         return key
