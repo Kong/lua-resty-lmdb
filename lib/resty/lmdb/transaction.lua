@@ -73,14 +73,14 @@ end
 
 local normalize_key
 do
-    local resty_sha256 = require("resty.sha256")
+    local sha256 = assert(require("resty.sha256").new())
 
-    -- lmdb has 511 bytes limit for key
+    -- lmdb has 511 bytes limitation for key
     local MAX_KEY_SIZE = 511
 
     normalize_key = function(key)
         if key and #key > MAX_KEY_SIZE then
-            local sha256 = resty_sha256:new()
+            sha256:reset()
             sha256:update(key)
             return sha256:final(key)
         end
