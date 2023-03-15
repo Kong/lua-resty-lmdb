@@ -17,16 +17,19 @@ jobs:
           valgrind: "valgrind"
           lua_nginx_module: "v0.10.19"
           lua_resty_core: "v0.1.21"
+          lua_resty_string: "v0.12"
         - nginx: "1.19.9"
           openssl: "1.1.1n"
           valgrind: "valgrind"
           lua_nginx_module: "v0.10.20"
           lua_resty_core: "v0.1.22"
+          lua_resty_string: "v0.14"
         - nginx: "1.21.4"
           openssl: "1.1.1s"
           valgrind: "valgrind"
           lua_nginx_module: "v0.10.21"
           lua_resty_core: "v0.1.23"
+          lua_resty_string: "v0.15"
 
     env:
       JOBS: 1 # must be 1 as LMDB tests interfere with each other
@@ -80,6 +83,7 @@ jobs:
         popd
         mkdir ../lib
         git clone https://github.com/openresty/lua-resty-core.git ../lua-resty-core -b ${{ matrix.lua_resty_core }}
+        git clone https://github.com/openresty/lua-resty-string.git ../lua-resty-string -b ${{ matrix.lua_resty_string }}
         git clone https://github.com/openresty/lua-resty-lrucache.git ../lua-resty-lrucache
         cp -r ../lua-resty-lrucache/lib/* ../lib/
         find ../lib
