@@ -80,7 +80,9 @@ do
 
     normalize_key = function(key)
         if key and #key > MAX_KEY_SIZE then
-            return resty_sha256(key)
+            local sha256 = resty_sha256:new()
+            sha256:update(key)
+            return sha256:final(key)
         end
 
         return key
