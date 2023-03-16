@@ -81,8 +81,7 @@ do
     normalize_key = function(key)
         if key and #key > MAX_KEY_SIZE then
             sha256:reset()
-            sha256:update(key)
-            return sha256:final()
+            return sha256:final(key)
         end
 
         return key
