@@ -119,3 +119,33 @@ value
 [error]
 [warn]
 [crit]
+
+
+=== TEST 5: different keys are ok
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            local key1 = string.rep("a", 512)
+            ngx.say(l.set(key1, "value1"))
+            ngx.say(l.get(key1))
+
+            local key2 = string.rep("b", 512)
+            ngx.say(l.set(key2, "value2"))
+            ngx.say(l.get(key2))
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+value1
+true
+value2
+--- no_error_log
+[error]
+[warn]
+[crit]
