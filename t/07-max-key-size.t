@@ -15,7 +15,7 @@ our $MainConfig = qq{
 };
 
 our $HttpConfig = qq{
-    lua_package_path "$pwd/../lib/?.lua;$pwd/lib/?.lua;;";
+    lua_package_path "$pwd/lib/?.lua;;";
 };
 
 no_long_string();

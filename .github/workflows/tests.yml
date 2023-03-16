@@ -83,7 +83,7 @@ jobs:
         git clone https://github.com/openresty/lua-resty-lrucache.git ../lua-resty-lrucache
         git clone https://github.com/openresty/lua-resty-string.git ../lua-resty-string
         cp -r ../lua-resty-lrucache/lib/* ../lib/
-        cp -r ../lua-resty-string/lib/* ../lib/
+        cp -r ../lua-resty-string/lib/* ../lua-resty-core/lib/
         find ../lib
 
     - name: Build OpenSSL
