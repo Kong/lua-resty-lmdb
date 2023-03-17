@@ -4,9 +4,22 @@
 #define MAX_BUF_LEN         512
 #define ENC_KEY_LEN         32
 
+
+#define LMDB_FILE_MODE      0600
+#define LMDB_DIR_MODE       0700
+
+
 #ifndef EVP_DIGEST_CONSTANT
 #define EVP_DIGEST_CONSTANT "konglmdb"
 #endif
+
+
+static ngx_str_t ngx_lua_resty_lmdb_file_names[] = {
+    ngx_string("/"),
+    ngx_string("/data.mdb"),
+    ngx_string("/lock.mdb"),
+    ngx_null_string,
+};
 
 
 static void *ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle);
@@ -226,50 +239,38 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
 }
 
 
-static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle) {
-    /* ngx_lua_resty_lmdb_conf_t *lcf;
-
-    lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
-                                                     ngx_lua_resty_lmdb_module); */
-
-    return NGX_OK;
-}
-
-
-static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
+static ngx_int_t
+ngx_lua_resty_lmdb_create_env(ngx_cycle_t *cycle,
+                              ngx_lua_resty_lmdb_conf_t *lcf,
+                              ngx_flag_t is_master)
 {
-    ngx_lua_resty_lmdb_conf_t *lcf;
     int                        rc;
-    int                        dead;
     MDB_val                    enckey;
     int                        block_size = 0;
     u_char                     keybuf[2048];
 
-    lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
-                                                     ngx_lua_resty_lmdb_module);
-
-    if (lcf == NULL || lcf->env_path == NULL) {
-        return NGX_OK;
-    }
 
     rc = mdb_env_create(&lcf->env);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                      "unable to create LMDB environment");
+                      "unable to create LMDB environment: %s",
+                      mdb_strerror(rc));
         return NGX_ERROR;
     }
 
     rc = mdb_env_set_mapsize(lcf->env, lcf->map_size);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                      "unable to set map size for LMDB");
+                      "unable to set map size for LMDB: %s",
+                      mdb_strerror(rc));
         return NGX_ERROR;
     }
 
     rc = mdb_env_set_maxdbs(lcf->env, lcf->max_databases);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                      "unable to set maximum DB count for LMDB");
+                      "unable to set maximum DB count for LMDB: %s",
+                      mdb_strerror(rc));
         return NGX_ERROR;
     }
 
@@ -287,7 +288,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         block_size = EVP_CIPHER_block_size(lcf->cipher);
         if (block_size == 0) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                "unable to set LMDB encryption key, block size");
+                          "unable to set LMDB encryption key, block size");
             return NGX_ERROR;
         }
 
@@ -295,19 +296,133 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
                                  &enckey, block_size);
         if (rc != 0) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                "unable to set LMDB encryption key: %s", mdb_strerror(rc));
+                          "unable to set LMDB encryption key: %s",
+                          mdb_strerror(rc));
             return NGX_ERROR;
         }
 
-        /* destroy data*/
-        ngx_explicit_memzero(lcf->key_data.data, lcf->key_data.len);
-        ngx_explicit_memzero(lcf->encryption_mode.data, lcf->encryption_mode.len);
+        /* worker will destroy secret data */
+        if (is_master == 0) {
+            ngx_explicit_memzero(lcf->key_data.data, lcf->key_data.len);
+            ngx_explicit_memzero(lcf->encryption_mode.data, lcf->encryption_mode.len);
 
-        ngx_str_null(&lcf->key_data);
-        ngx_str_null(&lcf->encryption_mode);
+            ngx_str_null(&lcf->key_data);
+            ngx_str_null(&lcf->encryption_mode);
+        }
     }
 
-    rc = mdb_env_open(lcf->env, (const char *) lcf->env_path->name.data, 0, 0600);
+    return NGX_OK;
+}
+
+
+static ngx_int_t
+ngx_lua_resty_lmdb_remove_files(ngx_cycle_t *cycle, ngx_path_t *path)
+{
+    ngx_file_info_t   fi;
+    ngx_err_t         err;
+
+    u_char            name_buf[NGX_MAX_PATH];
+    ngx_str_t        *names = ngx_lua_resty_lmdb_file_names + 1;
+    ngx_str_t        *name;
+
+    ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
+                  "LMDB database is corrupted or incompatible, removing");
+
+    if (ngx_file_info(path->name.data, &fi) == NGX_FILE_ERROR) {
+        ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                      ngx_file_info_n " \"%s\" failed", path->name.data);
+        return NGX_ERROR;
+    }
+
+    if (ngx_is_dir(&fi)) {
+
+        /* try to remove all lmdb files */
+        for (name = names; name->len; name++) {
+            ngx_snprintf(name_buf, NGX_MAX_PATH,
+                         "%V%V%Z", &path->name, name);
+
+            ngx_log_debug1(NGX_LOG_DEBUG_CORE, cycle->log, 0,
+                           "lmdb file remove: \"%s\"", name_buf);
+
+            if (ngx_delete_file(name_buf) == NGX_FILE_ERROR) {
+                ngx_log_error(NGX_LOG_WARN, cycle->log, ngx_errno,
+                              ngx_delete_file_n " \"%s\" failed",
+                              name_buf);
+            }
+        }
+
+        return NGX_OK;
+    }
+
+    ngx_lua_resty_lmdb_assert(!ngx_is_dir(&fi));
+
+    /* try to delete the file */
+    if (ngx_delete_file(path->name.data) == NGX_FILE_ERROR) {
+        ngx_log_error(NGX_LOG_WARN, cycle->log, ngx_errno,
+                      ngx_delete_file_n " \"%V\" failed",
+                      &path->name);
+    }
+
+    /* add a slash at the tail */
+    if (path->name.data[path->name.len - 1] == '/') {
+        ngx_snprintf(name_buf, NGX_MAX_PATH, "%V%Z", &path->name);
+
+    } else {
+        ngx_snprintf(name_buf, NGX_MAX_PATH, "%V/%Z", &path->name);
+    }
+
+    /* ensure lmdb directory exists */
+    err = ngx_create_full_path(name_buf, LMDB_DIR_MODE);
+    if (err) {
+        ngx_log_error(NGX_LOG_WARN, cycle->log, err,
+                      ngx_create_dir_n " \"%s\" failed", name_buf);
+    }
+
+    return NGX_OK;
+}
+
+
+static ngx_int_t
+ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
+                             ngx_lua_resty_lmdb_conf_t *lcf,
+                             ngx_flag_t is_master)
+{
+    int                        rc;
+    int                        dead;
+    ngx_uint_t                 try_count = 1;
+
+retry:
+
+    if (ngx_lua_resty_lmdb_create_env(cycle, lcf, is_master) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    rc = mdb_env_open(lcf->env, (const char *) lcf->env_path->name.data,
+                      0, LMDB_FILE_MODE);
+
+    if (rc == 0 || is_master == 0 || try_count == 0) {
+        goto check_lmdb;
+    }
+
+    /*
+     * may be MDB_VERSION_MISMATCH or MDB_INVALID
+     * try to remove the invalid LMDB files and open it again
+     */
+
+    ngx_lua_resty_lmdb_assert(is_master == 1);
+
+    mdb_env_close(lcf->env);
+
+    if (ngx_lua_resty_lmdb_remove_files(cycle, lcf->env_path) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    try_count--;
+
+    goto retry;
+
+check_lmdb:
+
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                       "unable to open LMDB environment: %s", mdb_strerror(rc));
@@ -325,14 +440,136 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
                       "found and cleared %d stale readers from LMDB", dead);
     }
 
+    return NGX_OK;
+}
+
+
+static ngx_int_t
+ngx_lua_resty_lmdb_txn_begin(ngx_cycle_t *cycle,
+                             ngx_lua_resty_lmdb_conf_t *lcf)
+{
+    int                        rc;
+
     rc = mdb_txn_begin(lcf->env, NULL, MDB_RDONLY, &lcf->ro_txn);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                      "unable to open LMDB read only transaction: %s", mdb_strerror(rc));
+                      "unable to open LMDB read only transaction: %s",
+                      mdb_strerror(rc));
         return NGX_ERROR;
     }
 
     mdb_txn_reset(lcf->ro_txn);
+
+    return NGX_OK;
+}
+
+
+static ngx_int_t
+ngx_lua_resty_lmdb_close_file(ngx_cycle_t *cycle,
+                              ngx_lua_resty_lmdb_conf_t *lcf)
+{
+    if (lcf->ro_txn != NULL) {
+        mdb_txn_abort(lcf->ro_txn);
+        lcf->ro_txn = NULL;
+    }
+
+    mdb_env_close(lcf->env);
+    lcf->env = NULL;
+
+    return NGX_OK;
+}
+
+
+static ngx_int_t
+ngx_lua_resty_lmdb_verify_file_status(ngx_cycle_t *cycle,
+                                      ngx_lua_resty_lmdb_conf_t *lcf)
+{
+    ngx_core_conf_t  *ccf;
+    ngx_file_info_t   fi;
+
+    u_char            name_buf[NGX_MAX_PATH];
+    ngx_str_t        *names = ngx_lua_resty_lmdb_file_names;
+    ngx_str_t        *name;
+
+    ccf = (ngx_core_conf_t *) ngx_get_conf(cycle->conf_ctx, ngx_core_module);
+
+    if (ccf->user == (ngx_uid_t) NGX_CONF_UNSET_UINT) {
+        return NGX_OK;
+    }
+
+    for (name = names; name->len; name++) {
+        ngx_snprintf(name_buf, NGX_MAX_PATH,
+                     "%V%V%Z", &lcf->env_path->name, name);
+
+        if (ngx_file_info(name_buf, &fi) == NGX_FILE_ERROR) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                          ngx_file_info_n " \"%s\" failed", name_buf);
+            return NGX_ERROR;
+        }
+
+        if (fi.st_uid != ccf->user) {
+            if (chown((const char *) name_buf, ccf->user, -1) == -1) {
+                ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                              "chown(\"%s\", %d) failed",
+                              name_buf, ccf->user);
+                return NGX_ERROR;
+            }
+        }
+    }
+
+    return NGX_OK;
+}
+
+
+static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
+{
+    ngx_lua_resty_lmdb_conf_t *lcf;
+
+    lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
+                                                     ngx_lua_resty_lmdb_module);
+
+    if (lcf == NULL || lcf->env_path == NULL) {
+        return NGX_OK;
+    }
+
+    /* ensure lmdb file is ok */
+
+    if (ngx_lua_resty_lmdb_open_file(cycle, lcf, 1) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    if (ngx_lua_resty_lmdb_close_file(cycle, lcf) != NGX_OK)  {
+        return NGX_ERROR;
+    }
+
+    /* change to proper permission */
+
+    if (ngx_lua_resty_lmdb_verify_file_status(cycle, lcf) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    return NGX_OK;
+}
+
+
+static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
+{
+    ngx_lua_resty_lmdb_conf_t *lcf;
+
+    lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
+                                                     ngx_lua_resty_lmdb_module);
+
+    if (lcf == NULL || lcf->env_path == NULL) {
+        return NGX_OK;
+    }
+
+    if (ngx_lua_resty_lmdb_open_file(cycle, lcf, 0) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    if (ngx_lua_resty_lmdb_txn_begin(cycle, lcf) != NGX_OK) {
+        return NGX_ERROR;
+    }
 
     return NGX_OK;
 }
@@ -350,8 +587,7 @@ static void ngx_lua_resty_lmdb_exit_worker(ngx_cycle_t *cycle)
     }
 
     if (lcf->env != NULL) {
-        mdb_txn_abort(lcf->ro_txn);
-        mdb_env_close(lcf->env);
+        ngx_lua_resty_lmdb_close_file(cycle, lcf);
     }
 }
 
