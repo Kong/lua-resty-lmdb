@@ -91,18 +91,22 @@ true
         content_by_lua_block {
             local l = require("resty.lmdb")
             local info = l.get_env_info()
+
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
+
             local old_used_pages = info["last_used_page"]
             local old_last_txnid = info["last_txnid"]
             local a = string.rep("Abcdef", 2000)
             ngx.say(l.set("test", a))
             ngx.say(l.get("test_not_exist"))
+
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
+            
             local used_pages =  info["last_used_page"]
             local last_txnid = info["last_txnid"]
             ngx.say(used_pages > old_used_pages)
