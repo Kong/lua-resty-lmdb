@@ -16,7 +16,7 @@ ffi.cdef([[
         size_t          map_size;        /**< Size of the data memory map */
         unsigned int    page_size;       /**< Size of a database page. */
         size_t          max_map_size;    /**< Size of the data memory map */
-        unsigned int    used_pages;
+        unsigned int    last_used_page;
         size_t          last_txnid;      /**< ID of the last committed transaction */
         unsigned int    max_readers;     /**< max reader slots in the environment */
         unsigned int    num_readers;     /**< max reader slots used in the environment */
@@ -83,7 +83,7 @@ function _M.get_env_info()
         page_size = tonumber(env_status[0].page_size),
         max_map_size = tonumber(env_status[0].max_map_size),
         max_pages = tonumber(env_status[0].max_map_size) / tonumber(env_status[0].page_size),
-        used_pages = tonumber(env_status[0].used_pages),
+        last_used_page = tonumber(env_status[0].last_used_page),
         last_txnid = tonumber(env_status[0].last_txnid),
         max_readers = tonumber(env_status[0].max_readers),
         num_readers = tonumber(env_status[0].num_readers),

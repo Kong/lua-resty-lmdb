@@ -74,7 +74,7 @@ Get the LMDB database runtime information. `status` table struct as below.
 ```
 {
   "max_pages": 256,
-  "used_pages": 11,
+  "last_used_page": 11,
   "last_txnid": 14,
   "max_readers": 126,
   "num_readers": 1,

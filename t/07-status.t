@@ -94,7 +94,7 @@ true
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
-            local old_used_pages = info["used_pages"]
+            local old_used_pages = info["last_used_page"]
             local old_last_txnid = info["last_txnid"]
             local a = string.rep("Abcdef", 2000)
             ngx.say(l.set("test", a))
@@ -103,7 +103,7 @@ true
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
-            local used_pages =  info["used_pages"]
+            local used_pages =  info["last_used_page"]
             local last_txnid = info["last_txnid"]
             ngx.say(used_pages > old_used_pages)
             ngx.say(last_txnid > old_last_txnid)
@@ -145,7 +145,7 @@ true
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
-            local old_used_pages = info["used_pages"]
+            local old_used_pages = info["last_used_page"]
             local old_last_txnid = info["last_txnid"]
 
             local t = txn.begin()
@@ -169,7 +169,7 @@ true
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
-            local used_pages =  info["used_pages"]
+            local used_pages =  info["last_used_page"]
             local last_txnid = info["last_txnid"]
             ngx.say(last_txnid > old_last_txnid)
         }

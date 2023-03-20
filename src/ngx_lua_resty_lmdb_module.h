@@ -43,7 +43,7 @@ typedef struct {
     size_t          map_size;        /**< Size of the data memory map */
     unsigned int    page_size;       /**< Size of a database page. */
     size_t          max_map_size;    /**< Size of the data memory map */
-    unsigned int    used_pages;
+    unsigned int    last_used_page;
     size_t          last_txnid;      /**< ID of the last committed transaction */
     unsigned int    max_readers;     /**< max reader slots in the environment */
     unsigned int    num_readers;     /**< max reader slots used in the environment */
