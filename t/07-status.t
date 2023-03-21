@@ -89,8 +89,9 @@ true
 --- config
     location = /t {
         content_by_lua_block {
-            local l = require("resty.lmdb.status")
-            local info = l.get_env_info()
+            local lstat = require("resty.lmdb.status")
+            local l = require("resty.lmdb")
+            local info = lstat.get_env_info()
 
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
@@ -102,7 +103,7 @@ true
             ngx.say(l.set("test", a))
             ngx.say(l.get("test_not_exist"))
 
-            local info = l.get_env_info()
+            local info = lstat.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
