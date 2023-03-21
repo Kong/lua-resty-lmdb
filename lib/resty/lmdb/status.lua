@@ -1,4 +1,5 @@
 local ffi = require("ffi")
+local base = require ("resty.core.base")
 
 local C = ffi.C
 local ffi_string = ffi.string
