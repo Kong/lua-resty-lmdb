@@ -141,12 +141,13 @@ true
     location = /t {
         content_by_lua_block {
             local txn = require("resty.lmdb.transaction")
-            local l = require("resty.lmdb.status")
-            
+            local lstat = require("resty.lmdb.status")
+            local l = require("resty.lmdb")
+
             l.set("testbalabala", "aaaa")
             ngx.say(l.db_drop(false))
 
-            local info = l.get_env_info()
+            local info = lstat.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
@@ -170,7 +171,7 @@ true
 
             ngx.say(l.get("test"))
 
-            local info = l.get_env_info()
+            local info = lstat.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
