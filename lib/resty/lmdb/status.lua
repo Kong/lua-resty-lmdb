@@ -33,7 +33,7 @@ function _M.get_env_info()
         return nil, ffi_string(err_ptr[0])
     end
 
-    assert(env_status[0] != nil, 2)
+    assert(env_status[0])
 
     return {
         map_size = tonumber(env_status[0].map_size),
