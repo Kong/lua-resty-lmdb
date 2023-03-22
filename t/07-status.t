@@ -38,8 +38,8 @@ __DATA__
 --- config
     location = /t {
         content_by_lua_block {
-            local l = require("resty.lmdb.status")
-            local info = l.get_env_info()
+            local l = require("resty.lmdb")
+            local info = l.info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
@@ -63,7 +63,7 @@ true
 --- config
     location = /t {
         content_by_lua_block {
-            local l = require("resty.lmdb.status")
+            local l = require("resty.lmdb")
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
@@ -89,9 +89,8 @@ true
 --- config
     location = /t {
         content_by_lua_block {
-            local lstat = require("resty.lmdb.status")
             local l = require("resty.lmdb")
-            local info = lstat.get_env_info()
+            local info = l.get_env_info()
 
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
@@ -103,7 +102,7 @@ true
             ngx.say(l.set("test", a))
             ngx.say(l.get("test_not_exist"))
 
-            local info = lstat.get_env_info()
+            local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
@@ -141,13 +140,12 @@ true
     location = /t {
         content_by_lua_block {
             local txn = require("resty.lmdb.transaction")
-            local lstat = require("resty.lmdb.status")
             local l = require("resty.lmdb")
 
             l.set("testbalabala", "aaaa")
             ngx.say(l.db_drop(false))
 
-            local info = lstat.get_env_info()
+            local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
@@ -171,7 +169,7 @@ true
 
             ngx.say(l.get("test"))
 
-            local info = lstat.get_env_info()
+            local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
