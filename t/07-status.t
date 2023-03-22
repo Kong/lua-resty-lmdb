@@ -39,7 +39,7 @@ __DATA__
     location = /t {
         content_by_lua_block {
             local l = require("resty.lmdb")
-            local info = l.info()
+            local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
