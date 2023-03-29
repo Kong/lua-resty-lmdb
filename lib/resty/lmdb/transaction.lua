@@ -102,7 +102,7 @@ do
 
     normalize_key = function(key)
         if key and #key > MAX_KEY_SIZE then
-            return sha256(key)
+            return assert(sha256(key))
         end
 
         return key
