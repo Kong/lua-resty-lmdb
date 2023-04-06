@@ -73,7 +73,6 @@ In case of error, `nil` and a string describing the error will be returned inste
 Get the LMDB database runtime information. `status` table struct as below.
 ```
 {
-  "max_pages": 256,
   "last_used_page": 11,
   "last_txnid": 14,
   "max_readers": 126,
