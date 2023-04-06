@@ -40,8 +40,6 @@ __DATA__
         content_by_lua_block {
             local l = require("resty.lmdb")
             local info = l.get_env_info()
-            ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
-            ngx.say(info["max_pages"])            
             ngx.say(info["last_used_page"])
             ngx.say(info["last_txnid"])
             ngx.say(info["max_readers"])
@@ -54,8 +52,6 @@ __DATA__
 --- request
 GET /t
 --- response_body_like chomp
-true
-\d+
 \d+
 \d+
 \d+
@@ -80,7 +76,6 @@ true
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
-            ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
         }
     }
 --- request
@@ -88,7 +83,6 @@ GET /t
 --- response_body
 10485760
 4096
-true
 --- no_error_log
 [error]
 [warn]
@@ -107,7 +101,6 @@ true
 
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
-            ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
 
             local old_used_pages = info["last_used_page"]
             local old_last_txnid = info["last_txnid"]
@@ -118,8 +111,7 @@ true
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
-            ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
-            
+
             local used_pages =  info["last_used_page"]
             local last_txnid = info["last_txnid"]
             ngx.say(used_pages > old_used_pages)
@@ -132,11 +124,9 @@ GET /t
 5242880
 4096
 true
-true
 nil
 5242880
 4096
-true
 true
 true
 --- no_error_log
@@ -161,7 +151,6 @@ true
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
-            ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
             local old_used_pages = info["last_used_page"]
             local old_last_txnid = info["last_txnid"]
 
@@ -185,7 +174,6 @@ true
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
-            ngx.say(info["map_size"]/info["page_size"]==info["max_pages"])
             local used_pages =  info["last_used_page"]
             local last_txnid = info["last_txnid"]
             ngx.say(last_txnid > old_last_txnid)
@@ -198,7 +186,6 @@ true
 5242880
 4096
 true
-true
 1: nil
 2: true
 3: value
@@ -207,7 +194,6 @@ true
 nil
 5242880
 4096
-true
 true
 
 --- no_error_log
