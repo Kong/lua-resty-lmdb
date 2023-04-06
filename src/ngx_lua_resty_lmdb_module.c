@@ -438,22 +438,22 @@ int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_status_t *lst, const 
     }
 
     if (mdb_env_stat(lcf->env, &mst)) {
-        *err = "mdb_env_stat failed";
+        *err = "mdb_env_stat() failed";
         return NGX_ERROR;
     }
 
     if (mdb_env_info(lcf->env, &mei)) {
-        *err = "mdb_env_info failed";
+        *err = "mdb_env_info() failed";
         return NGX_ERROR;
     }
 
-    lst->map_size = mei.me_mapsize;
-    lst->page_size = mst.ms_psize;
-    lst->max_map_size = mei.me_mapsize;
+    lst->map_size       = mei.me_mapsize;
+    lst->page_size      = mst.ms_psize;
+    lst->max_map_size   = mei.me_mapsize;
     lst->last_used_page = mei.me_last_pgno + 1;
-    lst->last_txnid = mei.me_last_txnid;
-    lst->max_readers = mei.me_maxreaders;
-    lst->num_readers = mei.me_numreaders;
+    lst->last_txnid     = mei.me_last_txnid;
+    lst->max_readers    = mei.me_maxreaders;
+    lst->num_readers    = mei.me_numreaders;
 
     return NGX_OK;
 }
