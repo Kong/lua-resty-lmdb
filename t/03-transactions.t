@@ -34,6 +34,7 @@ __DATA__
             local txn = require("resty.lmdb.transaction")
             local l = require("resty.lmdb")
 
+            l.set("testbalabala", "aaaa")
             ngx.say(l.db_drop(false))
 
             local t = txn.begin()
@@ -81,6 +82,7 @@ nil
             local txn = require("resty.lmdb.transaction")
             local l = require("resty.lmdb")
 
+            l.set("testbalabala", "aaaa")
             ngx.say(l.db_drop(false))
 
             local t = txn.begin()
@@ -114,6 +116,7 @@ value
             local txn = require("resty.lmdb.transaction")
             local l = require("resty.lmdb")
 
+            l.set("testbalabala", "aaaa")
             ngx.say(l.db_drop(false))
 
             local t = txn.begin()

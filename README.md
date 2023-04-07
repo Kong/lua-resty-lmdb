@@ -13,6 +13,7 @@ Table of Contents
         * [resty.lmdb](#restylmdb)
             * [get](#get)
             * [set](#set)
+            * [get_env_info](#get_env_info)
         * [db\_drop](#db_drop)
         * [resty.lmdb.transaction](#restylmdbtransaction)
             * [reset](#reset)
@@ -60,6 +61,30 @@ it defaults to `"_default"`.
 Setting a key's value to `nil` will remove that key from the corresponding database.
 
 In case of error, `nil` and a string describing the error will be returned instead.
+
+[Back to TOC](#table-of-contents)
+
+#### get_env_info
+
+**syntax:** *status, err = lmdb.get_env_info()*
+
+**context:** *any context **except** init_by_lua&#42;*
+
+Get the LMDB database runtime information. `status` table struct as below.
+```
+{
+  "last_used_page": 11,
+  "last_txnid": 14,
+  "max_readers": 126,
+  "num_readers": 1,
+  "map_size": 1048576,
+  "page_size": 4096,
+  "max_map_size": 1048576
+}
+```
+
+In case of error, `nil` and a string describing the error will be returned instead.
+
 
 [Back to TOC](#table-of-contents)
 
