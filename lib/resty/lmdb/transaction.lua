@@ -71,6 +71,29 @@ function _M.begin(hint)
 end
 
 
+local normalize_key
+do
+    local resty_sha256 = assert(require("resty.sha256").new())
+
+    -- lmdb has 511 bytes limitation for key
+    local MAX_KEY_SIZE = 511
+
+    local sha256 = function(str)
+        resty_sha256:reset()
+        resty_sha256:update(str)
+        return resty_sha256:final()
+    end
+
+    normalize_key = function(key)
+        if key and #key > MAX_KEY_SIZE then
+            return assert(sha256(key))
+        end
+
+        return key
+    end
+end
+
+
 local get_dbi
 do
     local CACHED_TXN_DBI = _M.begin(1)
@@ -120,7 +143,7 @@ end
 function _TXN_MT:get(key, db)
     local op = self:_new_op()
     op.opcode = "GET"
-    op.key = key
+    op.key = normalize_key(key)
     op.db = db or DEFAULT_DB
 end
 
@@ -128,7 +151,7 @@ end
 function _TXN_MT:set(key, value, db)
     local op = self:_new_op()
     op.opcode = "SET"
-    op.key = key
+    op.key = normalize_key(key)
     op.value = value
     op.db = db or DEFAULT_DB
     op.flags = 0
