@@ -73,32 +73,16 @@ end
 
 local normalize_key
 do
-    local sha256
-
-    local ok, digest = pcall(require, "resty.openssl.digest")
-    if not ok then
-
-        local resty_sha256 = assert(require("resty.sha256").new())
-
-        sha256 = function(str)
-            resty_sha256:reset()
-            resty_sha256:update(str)
-            return resty_sha256:final()
-        end
-
-    else
-
-        local digest_sha256 = assert(digest.new("sha256"))
-
-        sha256 = function(str)
-            digest_sha256:reset()
-            return digest:final(str)
-        end
-
-    end
+    local resty_sha256 = assert(require("resty.sha256").new())
 
     -- lmdb has 511 bytes limitation for key
     local MAX_KEY_SIZE = 511
+
+    local sha256 = function(str)
+        resty_sha256:reset()
+        resty_sha256:update(str)
+        return resty_sha256:final()
+    end
 
     normalize_key = function(key)
         if key and #key > MAX_KEY_SIZE then
