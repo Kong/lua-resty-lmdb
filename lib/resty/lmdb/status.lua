@@ -42,7 +42,7 @@ function _M.get_env_info()
         last_used_page = tonumber(env_status[0].last_used_page),
         last_txnid     = tonumber(env_status[0].last_txnid),
         max_readers    = tonumber(env_status[0].max_readers),
-        num_readers    = tonumber(env_status[0].num_readers),
+        num_readers    = tonumber(env_status[0].num_readers)
     }
 end
 
