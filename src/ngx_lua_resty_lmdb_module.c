@@ -16,9 +16,9 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle);
 static void ngx_lua_resty_lmdb_exit_worker(ngx_cycle_t *cycle);
 
 
-static int get_digest_key(ngx_str_t *passwd, MDB_val *key);
-static int lmdb_encrypt_func(const MDB_val *src, MDB_val *dst,
-                        const MDB_val *key, int encdec);
+static int ngx_lua_resty_lmdb_digest_key(ngx_str_t *passwd, MDB_val *key);
+static int ngx_lua_resty_lmdb_encrypt(const MDB_val *src, MDB_val *dst,
+                                      const MDB_val *key, int encdec);
 
 
 static const EVP_CIPHER *cipher;
@@ -279,7 +279,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         enckey.mv_data = keybuf;
         enckey.mv_size = ENC_KEY_LEN;
 
-        rc = get_digest_key(&lcf->key_data, &enckey);
+        rc = ngx_lua_resty_lmdb_digest_key(&lcf->key_data, &enckey);
         if (rc != 0) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                 "unable to set LMDB encryption key, string to key");
@@ -293,7 +293,8 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
             return NGX_ERROR;
         }
 
-        rc = mdb_env_set_encrypt(lcf->env, lmdb_encrypt_func, &enckey, block_size);
+        rc = mdb_env_set_encrypt(lcf->env, ngx_lua_resty_lmdb_encrypt,
+                                 &enckey, block_size);
         if (rc != 0) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                 "unable to set LMDB encryption key: %s", mdb_strerror(rc));
@@ -357,7 +358,7 @@ static void ngx_lua_resty_lmdb_exit_worker(ngx_cycle_t *cycle)
 }
 
 
-static int get_digest_key(ngx_str_t *passwd, MDB_val *key)
+static int ngx_lua_resty_lmdb_digest_key(ngx_str_t *passwd, MDB_val *key)
 {
     unsigned int    size;
     int             rc;
@@ -383,7 +384,8 @@ static int get_digest_key(ngx_str_t *passwd, MDB_val *key)
 
 
 static int
-lmdb_encrypt_func(const MDB_val *src, MDB_val *dst, const MDB_val *key, int encdec)
+ngx_lua_resty_lmdb_encrypt(const MDB_val *src, MDB_val *dst,
+                           const MDB_val *key, int encdec)
 {
     u_char                      iv[12];
     int                         ivl, outl, rc;
