@@ -27,7 +27,7 @@ ffi.cdef([[
 
 
 function _M.get_env_info()
-    local env_status = ffi_new("ngx_lua_resty_lmdb_ffi_status_t[1]"                          )
+    local env_status = ffi_new("ngx_lua_resty_lmdb_ffi_status_t[1]")
     local ret = C.ngx_lua_resty_lmdb_ffi_env_info(env_status, err_ptr)
     if ret == NGX_ERROR then
         return nil, ffi_string(err_ptr[0])
@@ -42,7 +42,7 @@ function _M.get_env_info()
         last_used_page = tonumber(env_status[0].last_used_page),
         last_txnid     = tonumber(env_status[0].last_txnid),
         max_readers    = tonumber(env_status[0].max_readers),
-        num_readers    = tonumber(env_status[0].num_readers)
+        num_readers    = tonumber(env_status[0].num_readers),
     }
 end
 
