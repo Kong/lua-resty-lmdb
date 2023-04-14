@@ -21,7 +21,7 @@ static int ngx_lua_resty_lmdb_cipher(const MDB_val *src, MDB_val *dst,
                                      const MDB_val *key, int encdec);
 
 
-static const EVP_CIPHER *cipher;
+static const EVP_CIPHER *g_cipher;
 
 
 static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
@@ -213,9 +213,9 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     }
 
     if (lcf->key_data.data != NULL) {
-        cipher = EVP_get_cipherbyname((char *)lcf->encryption_mode.data);
+        g_cipher = EVP_get_cipherbyname((char *)lcf->encryption_mode.data);
 
-        if (cipher == NULL ) {
+        if (g_cipher == NULL ) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                 "init \"lmdb_encryption\": \"%V\" failed",
                 &lcf->encryption_mode);
@@ -275,7 +275,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         return NGX_ERROR;
     }
 
-    if (cipher != NULL) {
+    if (g_cipher != NULL) {
         enckey.mv_data = keybuf;
         enckey.mv_size = ENC_KEY_LEN;
 
@@ -286,7 +286,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
             return NGX_ERROR;
         }
 
-        block_size = EVP_CIPHER_block_size(cipher);
+        block_size = EVP_CIPHER_block_size(g_cipher);
         if (block_size == 0) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                 "unable to set LMDB encryption key, block size");
@@ -397,7 +397,7 @@ ngx_lua_resty_lmdb_cipher(const MDB_val *src, MDB_val *dst,
     ngx_memcpy(iv, &ivl, sizeof(int));
     ngx_memcpy(iv + sizeof(int), ptr + 1, sizeof(mdb_size_t));
 
-    rc = EVP_CipherInit_ex(ctx, cipher, NULL, key[0].mv_data, iv, encdec);
+    rc = EVP_CipherInit_ex(ctx, g_cipher, NULL, key[0].mv_data, iv, encdec);
     if (rc) {
         EVP_CIPHER_CTX_set_padding(ctx, 0);
     }
