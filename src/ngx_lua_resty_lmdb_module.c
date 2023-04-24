@@ -394,9 +394,8 @@ ngx_lua_resty_lmdb_cipher(const MDB_val *src, MDB_val *dst,
 
     lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(ngx_cycle->conf_ctx,
                                                      ngx_lua_resty_lmdb_module);
-    if (lcf->cipher == NULL) {
-        return 1;
-    }
+
+    ngx_lua_resty_lmdb_assert(lcf->cipher != NULL);
 
     ptr = key[1].mv_data;
     ivl = ptr[0] & 0xffffffff;
