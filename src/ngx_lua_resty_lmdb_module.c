@@ -21,9 +21,6 @@ static int ngx_lua_resty_lmdb_cipher(const MDB_val *src, MDB_val *dst,
                                      const MDB_val *key, int encdec);
 
 
-static const EVP_CIPHER *g_cipher;
-
-
 static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
 
     { ngx_string("lmdb_environment_path"),
@@ -103,6 +100,7 @@ ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle)
      *
      *     conf->env_path = NULL;
      *     conf->env = NULL;
+     *     conf->cipher = NULL;
      */
 
     lcf->max_databases = NGX_CONF_UNSET_SIZE;
@@ -213,9 +211,9 @@ ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf)
     }
 
     if (lcf->key_data.data != NULL) {
-        g_cipher = EVP_get_cipherbyname((char *)lcf->encryption_mode.data);
+        lcf->cipher = EVP_get_cipherbyname((char *)lcf->encryption_mode.data);
 
-        if (g_cipher == NULL ) {
+        if (lcf->cipher == NULL ) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                 "init \"lmdb_encryption\": \"%V\" failed",
                 &lcf->encryption_mode);
@@ -275,7 +273,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
         return NGX_ERROR;
     }
 
-    if (g_cipher != NULL) {
+    if (lcf->cipher != NULL) {
         enckey.mv_data = keybuf;
         enckey.mv_size = ENC_KEY_LEN;
 
@@ -286,7 +284,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
             return NGX_ERROR;
         }
 
-        block_size = EVP_CIPHER_block_size(g_cipher);
+        block_size = EVP_CIPHER_block_size(lcf->cipher);
         if (block_size == 0) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                 "unable to set LMDB encryption key, block size");
@@ -387,17 +385,25 @@ static int
 ngx_lua_resty_lmdb_cipher(const MDB_val *src, MDB_val *dst,
                           const MDB_val *key, int encdec)
 {
+    ngx_lua_resty_lmdb_conf_t  *lcf;
+
     u_char                      iv[12];
     int                         ivl, outl, rc;
     mdb_size_t                 *ptr;
     EVP_CIPHER_CTX             *ctx = EVP_CIPHER_CTX_new();
+
+    lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(ngx_cycle->conf_ctx,
+                                                     ngx_lua_resty_lmdb_module);
+    if (lcf->cipher == NULL) {
+        return 1;
+    }
 
     ptr = key[1].mv_data;
     ivl = ptr[0] & 0xffffffff;
     ngx_memcpy(iv, &ivl, sizeof(int));
     ngx_memcpy(iv + sizeof(int), ptr + 1, sizeof(mdb_size_t));
 
-    rc = EVP_CipherInit_ex(ctx, g_cipher, NULL, key[0].mv_data, iv, encdec);
+    rc = EVP_CipherInit_ex(ctx, lcf->cipher, NULL, key[0].mv_data, iv, encdec);
     if (rc) {
         EVP_CIPHER_CTX_set_padding(ctx, 0);
     }
