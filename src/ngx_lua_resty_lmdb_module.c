@@ -403,7 +403,6 @@ ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
      */
 
     if (is_master == 1 && rc != 0 ) {
-        //(rc == MDB_VERSION_MISMATCH || rc == MDB_INVALID)) {
 
         mdb_env_close(lcf->env);
 
