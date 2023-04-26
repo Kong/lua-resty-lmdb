@@ -454,12 +454,12 @@ static ngx_int_t
 ngx_lua_resty_lmdb_close_file(ngx_cycle_t *cycle,
                               ngx_lua_resty_lmdb_conf_t *lcf)
 {
-    if (lcf->ro_txn != NULL) {
-        mdb_txn_abort(lcf->ro_txn);
-        lcf->ro_txn = NULL;
-    }
+    ngx_lua_resty_lmdb_assert(lcf->ro_txn != NULL);
 
+    mdb_txn_abort(lcf->ro_txn);
     mdb_env_close(lcf->env);
+
+    lcf->ro_txn = NULL;
     lcf->env = NULL;
 
     return NGX_OK;
