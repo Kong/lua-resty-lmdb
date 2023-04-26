@@ -440,16 +440,6 @@ check_lmdb:
                       "found and cleared %d stale readers from LMDB", dead);
     }
 
-    return NGX_OK;
-}
-
-
-static ngx_int_t
-ngx_lua_resty_lmdb_txn_begin(ngx_cycle_t *cycle,
-                             ngx_lua_resty_lmdb_conf_t *lcf)
-{
-    int                        rc;
-
     rc = mdb_txn_begin(lcf->env, NULL, MDB_RDONLY, &lcf->ro_txn);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
@@ -564,10 +554,6 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
     }
 
     if (ngx_lua_resty_lmdb_open_file(cycle, lcf, 0) != NGX_OK) {
-        return NGX_ERROR;
-    }
-
-    if (ngx_lua_resty_lmdb_txn_begin(cycle, lcf) != NGX_OK) {
         return NGX_ERROR;
     }
 
