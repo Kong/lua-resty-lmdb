@@ -5,8 +5,8 @@
 #define NGX_LUA_RESTY_LMDB_ENC_KEY_LEN  32
 
 
-#define LMDB_FILE_MODE      0600
-#define LMDB_DIR_MODE       0700
+#define NGX_LUA_RESTY_LMDB_FILE_MODE    0600
+#define NGX_LUA_RESTY_LMDB_DIR_MODE     0700
 
 
 #ifndef EVP_DIGEST_CONSTANT
@@ -372,7 +372,7 @@ ngx_lua_resty_lmdb_remove_files(ngx_cycle_t *cycle, ngx_path_t *path)
     }
 
     /* ensure lmdb directory exists */
-    err = ngx_create_full_path(name_buf, LMDB_DIR_MODE);
+    err = ngx_create_full_path(name_buf, NGX_LUA_RESTY_LMDB_DIR_MODE);
     if (err) {
         ngx_log_error(NGX_LOG_WARN, cycle->log, err,
                       ngx_create_dir_n " \"%s\" failed", name_buf);
@@ -398,7 +398,7 @@ retry:
     }
 
     rc = mdb_env_open(lcf->env, (const char *) lcf->env_path->name.data,
-                      0, LMDB_FILE_MODE);
+                      0, NGX_LUA_RESTY_LMDB_FILE_MODE);
 
     if (rc == 0 || is_master == 0 || try_count == 0) {
         goto check_lmdb;
