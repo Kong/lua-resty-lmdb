@@ -402,7 +402,8 @@ ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
      * try to remove the invalid LMDB files and open it again
      */
 
-    if (is_master == 1 && rc != 0 ) {
+    if (is_master == 1 &&
+        (rc == ENOTDIR || rc == MDB_VERSION_MISMATCH || rc == MDB_INVALID)) {
 
         mdb_env_close(lcf->env);
 
