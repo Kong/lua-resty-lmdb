@@ -1,8 +1,8 @@
 #include <ngx_lua_resty_lmdb_module.h>
 
 
-#define NGX_LUA_RESTY_LMDB_MAX_BUF_LEN         512
-#define ENC_KEY_LEN         32
+#define NGX_LUA_RESTY_LMDB_MAX_BUF_LEN  512
+#define NGX_LUA_RESTY_LMDB_ENC_KEY_LEN  32
 
 
 #define LMDB_FILE_MODE      0600
@@ -276,7 +276,7 @@ ngx_lua_resty_lmdb_create_env(ngx_cycle_t *cycle,
 
     if (lcf->cipher != NULL) {
         enckey.mv_data = keybuf;
-        enckey.mv_size = ENC_KEY_LEN;
+        enckey.mv_size = NGX_LUA_RESTY_LMDB_ENC_KEY_LEN;
 
         rc = ngx_lua_resty_lmdb_digest_key(&lcf->key_data, &enckey);
         if (rc != 0) {
