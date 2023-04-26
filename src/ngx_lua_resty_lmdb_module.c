@@ -1,16 +1,16 @@
 #include <ngx_lua_resty_lmdb_module.h>
 
 
-#define NGX_LUA_RESTY_LMDB_MAX_BUF_LEN  512
-#define NGX_LUA_RESTY_LMDB_ENC_KEY_LEN  32
+#define NGX_LUA_RESTY_LMDB_MAX_BUF_LEN      512
+#define NGX_LUA_RESTY_LMDB_ENC_KEY_LEN      32
 
 
-#define NGX_LUA_RESTY_LMDB_FILE_MODE    0600
-#define NGX_LUA_RESTY_LMDB_DIR_MODE     0700
+#define NGX_LUA_RESTY_LMDB_FILE_MODE        0600
+#define NGX_LUA_RESTY_LMDB_DIR_MODE         0700
 
 
-#ifndef EVP_DIGEST_CONSTANT
-#define EVP_DIGEST_CONSTANT "konglmdb"
+#ifndef NGX_LUA_RESTY_LMDB_DIGEST_CONSTANT
+#define NGX_LUA_RESTY_LMDB_DIGEST_CONSTANT "konglmdb"
 #endif
 
 
@@ -587,7 +587,8 @@ static int ngx_lua_resty_lmdb_digest_key(ngx_str_t *passwd, MDB_val *key)
     rc = EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
     if (rc) {
         rc = EVP_DigestUpdate(mdctx,
-                EVP_DIGEST_CONSTANT, sizeof(EVP_DIGEST_CONSTANT));
+                NGX_LUA_RESTY_LMDB_DIGEST_CONSTANT,
+                sizeof(NGX_LUA_RESTY_LMDB_DIGEST_CONSTANT));
     }
 
     if (rc) {
