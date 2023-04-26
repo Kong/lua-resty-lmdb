@@ -389,9 +389,6 @@ ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
 {
     int                        rc;
     int                        dead;
-    ngx_uint_t                 try_count = 1;
-
-retry:
 
     if (ngx_lua_resty_lmdb_create_env(cycle, lcf, is_master) != NGX_OK) {
         return NGX_ERROR;
@@ -400,28 +397,27 @@ retry:
     rc = mdb_env_open(lcf->env, (const char *) lcf->env_path->name.data,
                       0, NGX_LUA_RESTY_LMDB_FILE_MODE);
 
-    if (rc == 0 || is_master == 0 || try_count == 0) {
-        goto check_lmdb;
-    }
-
     /*
      * may be MDB_VERSION_MISMATCH or MDB_INVALID
      * try to remove the invalid LMDB files and open it again
      */
 
-    ngx_lua_resty_lmdb_assert(is_master == 1);
+    if (is_master == 1 && rc != 0 ) {
+        //(rc == MDB_VERSION_MISMATCH || rc == MDB_INVALID)) {
 
-    mdb_env_close(lcf->env);
+        mdb_env_close(lcf->env);
 
-    if (ngx_lua_resty_lmdb_remove_files(cycle, lcf->env_path) != NGX_OK) {
-        return NGX_ERROR;
+        if (ngx_lua_resty_lmdb_remove_files(cycle, lcf->env_path) != NGX_OK) {
+            return NGX_ERROR;
+        }
+
+        if (ngx_lua_resty_lmdb_create_env(cycle, lcf, is_master) != NGX_OK) {
+            return NGX_ERROR;
+        }
+
+        rc = mdb_env_open(lcf->env, (const char *) lcf->env_path->name.data,
+                          0, NGX_LUA_RESTY_LMDB_FILE_MODE);
     }
-
-    try_count--;
-
-    goto retry;
-
-check_lmdb:
 
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
