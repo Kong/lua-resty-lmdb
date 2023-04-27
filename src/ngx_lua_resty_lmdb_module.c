@@ -319,7 +319,6 @@ static ngx_int_t
 ngx_lua_resty_lmdb_remove_files(ngx_cycle_t *cycle, ngx_path_t *path)
 {
     ngx_file_info_t   fi;
-    ngx_err_t         err;
 
     u_char            name_buf[NGX_MAX_PATH];
     ngx_str_t        *names = ngx_lua_resty_lmdb_file_names + 1;
@@ -372,9 +371,8 @@ ngx_lua_resty_lmdb_remove_files(ngx_cycle_t *cycle, ngx_path_t *path)
     }
 
     /* ensure lmdb directory exists */
-    err = ngx_create_full_path(name_buf, NGX_LUA_RESTY_LMDB_DIR_MODE);
-    if (err) {
-        ngx_log_error(NGX_LOG_WARN, cycle->log, err,
+    if (ngx_create_dir(name_buf, NGX_LUA_RESTY_LMDB_DIR_MODE) == NGX_FILE_ERROR) {
+        ngx_log_error(NGX_LOG_WARN, cycle->log, ngx_errno,
                       ngx_create_dir_n " \"%s\" failed", name_buf);
     }
 
