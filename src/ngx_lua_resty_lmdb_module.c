@@ -397,6 +397,7 @@ ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
         (rc == ENOTDIR || rc == MDB_VERSION_MISMATCH || rc == MDB_INVALID)) {
 
         mdb_env_close(lcf->env);
+        lcf->env = NULL;
 
         if (ngx_lua_resty_lmdb_remove_files(cycle, lcf->env_path) != NGX_OK) {
             return NGX_ERROR;
