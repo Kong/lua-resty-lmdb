@@ -434,6 +434,7 @@ ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
                       mdb_strerror(rc));
 
         mdb_env_close(lcf->env);
+        lcf->env = NULL;
 
         return NGX_ERROR;
     }
