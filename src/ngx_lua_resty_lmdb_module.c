@@ -432,6 +432,9 @@ ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                       "unable to open LMDB read only transaction: %s",
                       mdb_strerror(rc));
+
+        mdb_env_close(lcf->env);
+
         return NGX_ERROR;
     }
 
