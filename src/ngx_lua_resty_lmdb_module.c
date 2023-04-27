@@ -413,6 +413,10 @@ ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                       "unable to open LMDB environment: %s", mdb_strerror(rc));
+
+        mdb_env_close(lcf->env);
+        lcf->env = NULL;
+
         return NGX_ERROR;
     }
 
