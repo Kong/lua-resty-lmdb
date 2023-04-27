@@ -358,8 +358,7 @@ ngx_lua_resty_lmdb_remove_files(ngx_cycle_t *cycle, ngx_path_t *path)
     /* try to delete the file */
     if (ngx_delete_file(path->name.data) == NGX_FILE_ERROR) {
         ngx_log_error(NGX_LOG_WARN, cycle->log, ngx_errno,
-                      ngx_delete_file_n " \"%V\" failed",
-                      &path->name);
+                      ngx_delete_file_n " \"%V\" failed", &path->name);
     }
 
     /* ensure lmdb directory exists */
