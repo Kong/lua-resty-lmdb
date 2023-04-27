@@ -362,18 +362,12 @@ ngx_lua_resty_lmdb_remove_files(ngx_cycle_t *cycle, ngx_path_t *path)
                       &path->name);
     }
 
-    /* add a slash at the tail */
-    if (path->name.data[path->name.len - 1] == '/') {
-        ngx_snprintf(name_buf, NGX_MAX_PATH, "%V%Z", &path->name);
-
-    } else {
-        ngx_snprintf(name_buf, NGX_MAX_PATH, "%V/%Z", &path->name);
-    }
-
     /* ensure lmdb directory exists */
-    if (ngx_create_dir(name_buf, NGX_LUA_RESTY_LMDB_DIR_MODE) == NGX_FILE_ERROR) {
+    if (ngx_create_dir(
+            path->name.data, NGX_LUA_RESTY_LMDB_DIR_MODE) == NGX_FILE_ERROR) {
+
         ngx_log_error(NGX_LOG_WARN, cycle->log, ngx_errno,
-                      ngx_create_dir_n " \"%s\" failed", name_buf);
+                      ngx_create_dir_n " \"%V\" failed", &path->name);
     }
 
     return NGX_OK;
