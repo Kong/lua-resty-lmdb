@@ -594,6 +594,7 @@ static int ngx_lua_resty_lmdb_digest_key(ngx_str_t *passwd, MDB_val *key)
     }
 
     EVP_MD_CTX_free(mdctx);
+
     return rc == 0;
 }
 
@@ -642,6 +643,8 @@ ngx_lua_resty_lmdb_cipher(const MDB_val *src, MDB_val *dst,
         rc = EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_GET_TAG,
                                  key[2].mv_size, key[2].mv_data);
     }
+
+    EVP_CIPHER_CTX_free(ctx);
 
     return rc == 0;
 }
