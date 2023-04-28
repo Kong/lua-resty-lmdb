@@ -263,7 +263,7 @@ ngx_lua_resty_lmdb_create_env(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                       "unable to set map size for LMDB: %s",
                       mdb_strerror(rc));
-        return NGX_ERROR;
+        goto failed;
     }
 
     rc = mdb_env_set_maxdbs(lcf->env, lcf->max_databases);
@@ -271,7 +271,7 @@ ngx_lua_resty_lmdb_create_env(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                       "unable to set maximum DB count for LMDB: %s",
                       mdb_strerror(rc));
-        return NGX_ERROR;
+        goto failed;
     }
 
     if (lcf->cipher != NULL) {
@@ -282,14 +282,14 @@ ngx_lua_resty_lmdb_create_env(ngx_cycle_t *cycle,
         if (rc != 0) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                 "unable to set LMDB encryption key, string to key");
-            return NGX_ERROR;
+            goto failed;
         }
 
         block_size = EVP_CIPHER_block_size(lcf->cipher);
         if (block_size == 0) {
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                           "unable to set LMDB encryption key, block size");
-            return NGX_ERROR;
+            goto failed;
         }
 
         rc = mdb_env_set_encrypt(lcf->env, ngx_lua_resty_lmdb_cipher,
@@ -298,7 +298,7 @@ ngx_lua_resty_lmdb_create_env(ngx_cycle_t *cycle,
             ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                           "unable to set LMDB encryption key: %s",
                           mdb_strerror(rc));
-            return NGX_ERROR;
+            goto failed;
         }
 
         /* worker will destroy secret data */
@@ -312,6 +312,13 @@ ngx_lua_resty_lmdb_create_env(ngx_cycle_t *cycle,
     }
 
     return NGX_OK;
+
+failed:
+
+    mdb_env_close(lcf->env);
+    lcf->env = NULL;
+
+    return NGX_ERROR;
 }
 
 
