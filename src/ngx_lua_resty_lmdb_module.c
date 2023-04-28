@@ -501,7 +501,9 @@ ngx_lua_resty_lmdb_verify_file_status(ngx_cycle_t *cycle,
     if (fi.st_uid != ccf->user) {
         if (chown((const char *) name_buf, ccf->user, -1) == -1) {
             ngx_log_error(NGX_LOG_WARN, cycle->log, ngx_errno,
-                          "chown(\"%s\", %d) failed",
+                          "chown(\"%s\", %d) failed, "
+                          "LMDB files/directory is not owned by the current Nginx user, "
+                          "this may cause permission issues or security risks later",
                           name_buf, ccf->user);
         }
     }
@@ -521,7 +523,9 @@ ngx_lua_resty_lmdb_verify_file_status(ngx_cycle_t *cycle,
         if (fi.st_uid != ccf->user) {
             if (chown((const char *) name_buf, ccf->user, -1) == -1) {
                 ngx_log_error(NGX_LOG_WARN, cycle->log, ngx_errno,
-                              "chown(\"%s\", %d) failed",
+                              "chown(\"%s\", %d) failed, "
+                              "LMDB files/directory is not owned by the current Nginx user, "
+                              "this may cause permission issues or security risks later",
                               name_buf, ccf->user);
             }
         }
