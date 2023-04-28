@@ -500,10 +500,9 @@ ngx_lua_resty_lmdb_verify_file_status(ngx_cycle_t *cycle,
 
     if (fi.st_uid != ccf->user) {
         if (chown((const char *) name_buf, ccf->user, -1) == -1) {
-            ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+            ngx_log_error(NGX_LOG_WARN, cycle->log, ngx_errno,
                           "chown(\"%s\", %d) failed",
                           name_buf, ccf->user);
-            return NGX_ERROR;
         }
     }
 
@@ -521,10 +520,9 @@ ngx_lua_resty_lmdb_verify_file_status(ngx_cycle_t *cycle,
 
         if (fi.st_uid != ccf->user) {
             if (chown((const char *) name_buf, ccf->user, -1) == -1) {
-                ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                ngx_log_error(NGX_LOG_WARN, cycle->log, ngx_errno,
                               "chown(\"%s\", %d) failed",
                               name_buf, ccf->user);
-                return NGX_ERROR;
             }
         }
     }
