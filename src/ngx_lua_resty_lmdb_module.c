@@ -15,7 +15,6 @@
 
 
 static ngx_str_t ngx_lua_resty_lmdb_file_names[] = {
-    ngx_string("/"),
     ngx_string("/data.mdb"),
     ngx_string("/lock.mdb"),
     ngx_null_string,
@@ -328,7 +327,7 @@ ngx_lua_resty_lmdb_remove_files(ngx_cycle_t *cycle, ngx_path_t *path)
     ngx_file_info_t   fi;
 
     u_char            name_buf[NGX_MAX_PATH];
-    ngx_str_t        *names = ngx_lua_resty_lmdb_file_names + 1;
+    ngx_str_t        *names = ngx_lua_resty_lmdb_file_names;
     ngx_str_t        *name;
 
     ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
@@ -487,6 +486,28 @@ ngx_lua_resty_lmdb_verify_file_status(ngx_cycle_t *cycle,
     if (ccf->user == (ngx_uid_t) NGX_CONF_UNSET_UINT) {
         return NGX_OK;
     }
+
+    /* check directory */
+
+    ngx_snprintf(name_buf, NGX_MAX_PATH,
+                 "%V%Z", &lcf->env_path->name);
+
+    if (ngx_file_info(name_buf, &fi) == NGX_FILE_ERROR) {
+        ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                      ngx_file_info_n " \"%s\" failed", name_buf);
+        return NGX_ERROR;
+    }
+
+    if (fi.st_uid != ccf->user) {
+        if (chown((const char *) name_buf, ccf->user, -1) == -1) {
+            ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
+                          "chown(\"%s\", %d) failed",
+                          name_buf, ccf->user);
+            return NGX_ERROR;
+        }
+    }
+
+    /* check files */
 
     for (name = names; name->len; name++) {
         ngx_snprintf(name_buf, NGX_MAX_PATH,
