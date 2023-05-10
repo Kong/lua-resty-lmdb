@@ -5,6 +5,10 @@
 #define NGX_LUA_RESTY_LMDB_DIR_MODE         0700
 
 
+#define NGX_LUA_RESTY_LMDB_VALIDATION_KEY  "validation_tag"
+#define NGX_LUA_RESTY_LMDB_DEFAULT_DB      "_default"
+
+
 static ngx_str_t ngx_lua_resty_lmdb_file_names[] = {
     ngx_string("/data.mdb"),
     ngx_string("/lock.mdb"),
@@ -370,6 +374,68 @@ ngx_lua_resty_lmdb_verify_file_status(ngx_cycle_t *cycle,
 }
 
 
+static ngx_int_t
+ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
+                            ngx_lua_resty_lmdb_conf_t *lcf)
+{
+    int                        rc;
+    MDB_dbi                    dbi;
+    MDB_val                    key;
+    MDB_val                    value;
+    MDB_txn                   *txn = lcf->ro_txn;
+
+    ngx_str_t                  validation_key =
+                                    ngx_string(NGX_LUA_RESTY_LMDB_VALIDATION_KEY);
+    ngx_str_t                  default_db =
+                                    ngx_string(NGX_LUA_RESTY_LMDB_DEFAULT_DB);
+
+    /* check tag value in lmdb */
+
+    if (lcf->validation_tag.data == NULL) {
+        return NGX_OK;
+    }
+
+    rc = mdb_dbi_open(txn, (const char *) default_db.data, 0, &dbi);
+    if (rc != 0) {
+        ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
+                      "unable to open LMDB transaction : %s",
+                      mdb_strerror(rc));
+        return NGX_ERROR;
+    }
+
+    key.mv_size = validation_key.len;
+    key.mv_data = validation_key.data;
+
+    rc = mdb_get(txn, dbi, &key, &value);
+    if (rc == 0) {
+        /* key found, compare with validation_tag value */
+        if (ngx_strncmp(lcf->validation_tag.data,
+                        value.mv_data, value.mv_size) == 0) {
+
+            return NGX_OK;
+        }
+
+        ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
+                      "LMDB validation failed");
+
+    } else if (rc == MDB_NOTFOUND) {
+        ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
+                      "LMDB has no validation_tag");
+
+    } else {
+        ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
+                      "unable to get LMDB validation_tag : %s",
+                      mdb_strerror(rc));
+        mdb_txn_reset(txn);
+        return NGX_ERROR;
+    }
+
+    /* drop lmdb db */
+
+    return NGX_OK;
+}
+
+
 static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
 {
     ngx_lua_resty_lmdb_conf_t *lcf;
@@ -384,6 +450,11 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
     /* ensure lmdb file is ok */
 
     if (ngx_lua_resty_lmdb_open_file(cycle, lcf, 1) != NGX_OK) {
+        return NGX_ERROR;
+    }
+
+    if (ngx_lua_resty_lmdb_validate(cycle, lcf) != NGX_OK) {
+        ngx_lua_resty_lmdb_close_file(cycle, lcf);
         return NGX_ERROR;
     }
 
