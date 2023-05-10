@@ -386,8 +386,6 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
 
     ngx_str_t                  validation_key =
                                     ngx_string(NGX_LUA_RESTY_LMDB_VALIDATION_KEY);
-    ngx_str_t                  default_db =
-                                    ngx_string(NGX_LUA_RESTY_LMDB_DEFAULT_DB);
 
     /* check tag value in lmdb */
 
@@ -403,11 +401,12 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         return NGX_ERROR;
     }
 
-    rc = mdb_dbi_open(txn, (const char *) default_db.data, 0, &dbi);
+    rc = mdb_dbi_open(txn, NGX_LUA_RESTY_LMDB_DEFAULT_DB, 0, &dbi);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to open LMDB database : %s",
                       mdb_strerror(rc));
+        mdb_txn_reset(txn);
         return NGX_ERROR;
     }
 
@@ -449,7 +448,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         return NGX_ERROR;
     }
 
-    rc = mdb_dbi_open(txn, (const char *) default_db.data, 0, &dbi);
+    rc = mdb_dbi_open(txn, NGX_LUA_RESTY_LMDB_DEFAULT_DB, 0, &dbi);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to open LMDB database : %s",
