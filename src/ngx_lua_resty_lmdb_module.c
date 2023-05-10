@@ -395,10 +395,18 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         return NGX_OK;
     }
 
+    rc = mdb_txn_renew(txn);
+    if (rc != 0) {
+        ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
+                      "unable to renew LMDB transaction : %s",
+                      mdb_strerror(rc));
+        return NGX_ERROR;
+    }
+
     rc = mdb_dbi_open(txn, (const char *) default_db.data, 0, &dbi);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
-                      "unable to open LMDB transaction : %s",
+                      "unable to open LMDB database : %s",
                       mdb_strerror(rc));
         return NGX_ERROR;
     }
@@ -412,6 +420,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         if (ngx_strncmp(lcf->validation_tag.data,
                         value.mv_data, value.mv_size) == 0) {
 
+            mdb_txn_reset(txn);
             return NGX_OK;
         }
 
@@ -426,13 +435,61 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to get LMDB validation_tag : %s",
                       mdb_strerror(rc));
-        mdb_txn_reset(txn);
-        return NGX_ERROR;
     }
+
+    mdb_txn_reset(txn);
 
     /* drop lmdb db */
 
+    rc = mdb_txn_begin(lcf->env, NULL, 0, &txn);
+    if (rc != 0) {
+        ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                      "unable to open LMDB write transaction: %s",
+                      mdb_strerror(rc));
+        return NGX_ERROR;
+    }
+
+    rc = mdb_dbi_open(txn, (const char *) default_db.data, 0, &dbi);
+    if (rc != 0) {
+        ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
+                      "unable to open LMDB database : %s",
+                      mdb_strerror(rc));
+        return NGX_ERROR;
+    }
+
+    rc = mdb_drop(txn, dbi, 0);
+    if (rc != 0) {
+        ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
+                      "unable to drop LMDB database : %s",
+                      mdb_strerror(rc));
+        goto failed;
+    }
+
+    value.mv_size = lcf->validation_tag.len;
+    value.mv_data = lcf->validation_tag.data;
+
+    rc = mdb_put(txn, dbi, &key, &value, 0);
+    if (rc != 0) {
+        ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
+                      "unable to set LMDB validation_tag : %s",
+                      mdb_strerror(rc));
+        goto failed;
+    }
+
+    rc = mdb_txn_commit(txn);
+    if (rc != 0) {
+        ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
+                      "unable to commit LMDB : %s",
+                      mdb_strerror(rc));
+        goto failed;
+    }
+
     return NGX_OK;
+
+failed:
+
+    mdb_txn_abort(txn);
+    return NGX_ERROR;
 }
 
 
