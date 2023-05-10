@@ -16,7 +16,7 @@ static ngx_str_t ngx_lua_resty_lmdb_file_names[] = {
 };
 
 
-static ngx_cycle_t *ngx_lua_resty_lmdb_init_cycle;
+static ngx_cycle_t *ngx_lua_resty_lmdb_ngx_cycle;
 
 
 static void *ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle);
@@ -397,14 +397,14 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
     }
 
     /* save cycle in init phase for ngx_lua_resty_lmdb_cipher() */
-    ngx_lua_resty_lmdb_init_cycle = cycle;
+    ngx_lua_resty_lmdb_ngx_cycle = cycle;
 
     rc = mdb_txn_begin(lcf->env, NULL, 0, &txn);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                       "unable to open LMDB transaction: %s",
                       mdb_strerror(rc));
-        ngx_lua_resty_lmdb_init_cycle = NULL;
+        ngx_lua_resty_lmdb_ngx_cycle = NULL;
         return NGX_ERROR;
     }
 
@@ -415,7 +415,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to open LMDB database : %s",
                       mdb_strerror(rc));
-        ngx_lua_resty_lmdb_init_cycle = NULL;
+        ngx_lua_resty_lmdb_ngx_cycle = NULL;
         mdb_txn_abort(txn);
         return NGX_ERROR;
     }
@@ -429,7 +429,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         if (ngx_strncmp(lcf->validation_tag.data,
                         value.mv_data, value.mv_size) == 0) {
 
-            ngx_lua_resty_lmdb_init_cycle = NULL;
+            ngx_lua_resty_lmdb_ngx_cycle = NULL;
             mdb_txn_abort(txn);
             return NGX_OK;
         }
@@ -456,7 +456,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
                       "unable to open LMDB write transaction: %s",
                       mdb_strerror(rc));
-        ngx_lua_resty_lmdb_init_cycle = NULL;
+        ngx_lua_resty_lmdb_ngx_cycle = NULL;
         return NGX_ERROR;
     }
 
@@ -465,7 +465,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to open LMDB database : %s",
                       mdb_strerror(rc));
-        ngx_lua_resty_lmdb_init_cycle = NULL;
+        ngx_lua_resty_lmdb_ngx_cycle = NULL;
         return NGX_ERROR;
     }
 
@@ -500,7 +500,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to open LMDB database : %s",
                       mdb_strerror(rc));
-        ngx_lua_resty_lmdb_init_cycle = NULL;
+        ngx_lua_resty_lmdb_ngx_cycle = NULL;
         return NGX_ERROR;
     }
 
@@ -523,13 +523,13 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         goto failed;
     }
 
-    ngx_lua_resty_lmdb_init_cycle = NULL;
+    ngx_lua_resty_lmdb_ngx_cycle = NULL;
 
     return NGX_OK;
 
 failed:
 
-    ngx_lua_resty_lmdb_init_cycle = NULL;
+    ngx_lua_resty_lmdb_ngx_cycle = NULL;
     mdb_txn_abort(txn);
     return NGX_ERROR;
 }
