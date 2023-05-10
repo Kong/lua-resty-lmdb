@@ -13,6 +13,8 @@ struct ngx_lua_resty_lmdb_conf_s {
     size_t       map_size;
     MDB_env     *env;
     MDB_txn     *ro_txn;
+
+    ngx_str_t    validation_tag;
 };
 
 
