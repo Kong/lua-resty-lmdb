@@ -469,31 +469,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         goto failed;
     }
 
-    rc = mdb_txn_commit(txn);
-    if (rc != 0) {
-        ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
-                      "unable to commit LMDB : %s",
-                      mdb_strerror(rc));
-        goto failed;
-    }
-
-    /* set tag to lmdb db */
-
-    rc = mdb_txn_begin(lcf->env, NULL, 0, &txn);
-    if (rc != 0) {
-        ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                      "unable to open LMDB write transaction: %s",
-                      mdb_strerror(rc));
-        return NGX_ERROR;
-    }
-
-    rc = mdb_dbi_open(txn, NGX_LUA_RESTY_LMDB_DEFAULT_DB, MDB_CREATE, &dbi);
-    if (rc != 0) {
-        ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
-                      "unable to open LMDB database : %s",
-                      mdb_strerror(rc));
-        return NGX_ERROR;
-    }
+    /* set tag value to lmdb db */
 
     value.mv_size = lcf->validation_tag.len;
     value.mv_data = lcf->validation_tag.data;
