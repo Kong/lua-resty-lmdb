@@ -411,8 +411,13 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to open LMDB database : %s",
                       mdb_strerror(rc));
-        mdb_txn_abort(txn);
-        return NGX_ERROR;
+
+        if (rc == MDB_CRYPTO_FAIL) {
+            mdb_txn_abort(txn);
+            return NGX_DECLINED;
+        }
+
+        goto failed;
     }
 
     key.mv_size = validation_key.len;
@@ -439,27 +444,10 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to get LMDB validation_tag : %s",
                       mdb_strerror(rc));
+        goto failed;
     }
-
-    mdb_txn_abort(txn);
 
     /* drop lmdb db */
-
-    rc = mdb_txn_begin(lcf->env, NULL, 0, &txn);
-    if (rc != 0) {
-        ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                      "unable to open LMDB write transaction: %s",
-                      mdb_strerror(rc));
-        return NGX_ERROR;
-    }
-
-    rc = mdb_dbi_open(txn, NGX_LUA_RESTY_LMDB_DEFAULT_DB, MDB_CREATE, &dbi);
-    if (rc != 0) {
-        ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
-                      "unable to open LMDB database : %s",
-                      mdb_strerror(rc));
-        return NGX_ERROR;
-    }
 
     rc = mdb_drop(txn, dbi, 0);
     if (rc != 0) {
