@@ -7,7 +7,7 @@ use Cwd qw(cwd);
 
 repeat_each(1);
 
-plan tests => repeat_each() * blocks() * 5 + 1;
+plan tests => repeat_each() * blocks() * 5 + 2;
 
 my $pwd = cwd();
 
@@ -27,6 +27,14 @@ our $MainConfig2 = qq{
     lmdb_encryption_key /etc/hostname;
     lmdb_encryption_mode "chacha20-poly1305";
     lmdb_validation_tag 3.3;
+};
+
+our $MainConfig3 = qq{
+    lmdb_environment_path /tmp/test10-cipher.mdb;
+    lmdb_map_size 5m;
+    lmdb_encryption_key /etc/hostname;
+    lmdb_encryption_mode "chacha20-poly1305";
+    lmdb_validation_tag 3.4;
 };
 
 our $HttpConfig = qq{
@@ -95,6 +103,38 @@ value
 nil
 --- error_log
 LMDB has no validation_tag
+--- no_error_log
+[emerg]
+[error]
+[crit]
+
+
+=== TEST 3: change validation_tag
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig3
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            ngx.say(l.get("validation_tag"))
+            ngx.say(l.get("test"))
+
+            ngx.say(l.set("test", "value"))
+            ngx.say(l.get("test"))
+            ngx.say(l.get("test_not_exist"))
+        }
+    }
+--- request
+GET /t
+--- response_body
+3.4
+nil
+true
+value
+nil
+--- error_log
+LMDB validation failed
 --- no_error_log
 [emerg]
 [error]
