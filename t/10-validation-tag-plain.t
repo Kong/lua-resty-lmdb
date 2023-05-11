@@ -2,20 +2,25 @@
 
 # run this test after 00-init_mdb.t
 
-use Test::Nginx::Socket::Lua 'no_plan';
+use Test::Nginx::Socket::Lua;
 use Cwd qw(cwd);
 
 repeat_each(1);
 
+plan tests => repeat_each() * blocks() * 5 + 1;
+
 my $pwd = cwd();
 
+# remove db for testing
+system("rm -rf /tmp/test10-plain.mdb");
+
 our $MainConfig1 = qq{
-    lmdb_environment_path /tmp/test10.mdb;
+    lmdb_environment_path /tmp/test10-plain.mdb;
     lmdb_map_size 5m;
 };
 
 our $MainConfig2 = qq{
-    lmdb_environment_path /tmp/test10.mdb;
+    lmdb_environment_path /tmp/test10-plain.mdb;
     lmdb_map_size 5m;
     lmdb_validation_tag 3.3;
 };
