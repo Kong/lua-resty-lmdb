@@ -506,7 +506,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
         return NGX_ERROR;
     }
 
-    /* set to NULL fro worker processes */
+    /* reset to NULL for worker processes */
     ngx_lua_resty_lmdb_ngx_cycle = NULL;
 
     if (ngx_lua_resty_lmdb_close_file(cycle, lcf) != NGX_OK)  {
