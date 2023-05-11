@@ -411,12 +411,6 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to open LMDB database : %s",
                       mdb_strerror(rc));
-
-        if (rc == MDB_CRYPTO_FAIL) {
-            mdb_txn_abort(txn);
-            return NGX_DECLINED;
-        }
-
         goto failed;
     }
 
