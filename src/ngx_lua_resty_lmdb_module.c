@@ -16,9 +16,6 @@ static ngx_str_t ngx_lua_resty_lmdb_file_names[] = {
 };
 
 
-static ngx_cycle_t *ngx_lua_resty_lmdb_ngx_cycle;
-
-
 static void *ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle);
 static char *ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf);
 static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle);
@@ -498,16 +495,10 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
         return NGX_ERROR;
     }
 
-    /* save cycle in init phase for ngx_lua_resty_lmdb_cipher() */
-    ngx_lua_resty_lmdb_ngx_cycle = cycle;
-
     if (ngx_lua_resty_lmdb_validate(cycle, lcf) != NGX_OK) {
         ngx_lua_resty_lmdb_close_file(cycle, lcf);
         return NGX_ERROR;
     }
-
-    /* reset to NULL for worker processes */
-    ngx_lua_resty_lmdb_ngx_cycle = NULL;
 
     if (ngx_lua_resty_lmdb_close_file(cycle, lcf) != NGX_OK)  {
         return NGX_ERROR;
