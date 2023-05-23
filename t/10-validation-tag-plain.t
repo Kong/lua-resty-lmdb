@@ -7,7 +7,7 @@ use Cwd qw(cwd);
 
 repeat_each(1);
 
-plan tests => repeat_each() * blocks() * 5 + 2;
+plan tests => repeat_each() * blocks() * 6;
 
 my $pwd = cwd();
 
@@ -65,6 +65,8 @@ true
 value
 nil
 nil
+--- error_log
+LMDB validation disabled
 --- no_error_log
 [error]
 [warn]
