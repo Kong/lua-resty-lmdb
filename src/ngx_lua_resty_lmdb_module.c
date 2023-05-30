@@ -395,6 +395,8 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         return NGX_OK;
     }
 
+    ngx_lua_resty_lmdb_assert(lcf->validation_tag.data);
+
     rc = mdb_txn_begin(lcf->env, NULL, 0, &txn);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
