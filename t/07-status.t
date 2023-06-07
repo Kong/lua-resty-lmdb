@@ -76,6 +76,8 @@ GET /t
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
+            local cjson = require("cjson")
+            ngx.say(cjson.encode(info))
         }
     }
 --- request
