@@ -40,13 +40,13 @@ __DATA__
         content_by_lua_block {
             local l = require("resty.lmdb")
             local info = l.get_env_info()
-            ngx.say(info["last_used_page"])
-            ngx.say(info["last_txnid"])
-            ngx.say(info["max_readers"])
-            ngx.say(info["num_readers"])
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
-            ngx.say(info["max_map_size"])
+            ngx.say(info["max_readers"])
+            ngx.say(info["num_readers"])
+            ngx.say(info["alocated_pages"])
+            ngx.say(info["used_pages"])
+            ngx.say(info["entries"])
         }
     }
 --- request
@@ -56,8 +56,8 @@ GET /t
 \d+
 \d+
 \d+
-5242880
-4096
+\d+
+\d+
 \d+
 
 --- no_error_log
@@ -76,8 +76,6 @@ GET /t
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
-            local cjson = require("cjson")
-            ngx.say(cjson.encode(info))
         }
     }
 --- request
@@ -104,9 +102,8 @@ GET /t
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
 
-            local old_used_pages = info["last_used_page"]
-            local old_last_txnid = info["last_txnid"]
-            local a = string.rep("Abcdef", 2000)
+            local old_used_pages = info["used_pages"]
+            local a = string.rep("Abcdef", 5000)
             ngx.say(l.set("test", a))
             ngx.say(l.get("test_not_exist"))
 
@@ -114,10 +111,9 @@ GET /t
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
 
-            local used_pages =  info["last_used_page"]
-            local last_txnid = info["last_txnid"]
-            ngx.say(used_pages > old_used_pages)
-            ngx.say(last_txnid > old_last_txnid)
+            local used_pages =  info["used_pages"]
+                        local cjson = require("cjson")
+            ngx.say(used_pages >= old_used_pages)
         }
     }
 --- request
@@ -129,7 +125,6 @@ true
 nil
 5242880
 4096
-true
 true
 --- no_error_log
 [error]
@@ -153,9 +148,8 @@ true
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
-            local old_used_pages = info["last_used_page"]
-            local old_last_txnid = info["last_txnid"]
-
+            local old_used_pages = info["used_pages"]
+            local old_alocated_pages = info["alocated_pages"]
             local t = txn.begin()
             t:get("not_found")
             t:set("test", "value")
@@ -176,9 +170,10 @@ true
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
-            local used_pages =  info["last_used_page"]
-            local last_txnid = info["last_txnid"]
-            ngx.say(last_txnid > old_last_txnid)
+            local used_pages =  info["used_pages"]
+            local alocated_pages = info["alocated_pages"]
+            ngx.say(used_pages >= old_used_pages)
+            ngx.say(alocated_pages >= old_alocated_pages)
         }
     }
 --- request
@@ -196,6 +191,7 @@ true
 nil
 5242880
 4096
+true
 true
 
 --- no_error_log
