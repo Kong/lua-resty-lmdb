@@ -710,8 +710,6 @@ int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_status_t *lst, const 
     lst->num_readers    = mei.me_numreaders;
     lst->used_pages     = mst.ms_branch_pages + mst.ms_leaf_pages
                           + mst.ms_overflow_pages;
-    ngx_log_error(NGX_LOG_ERR, ngx_cycle->log, 0, "used_pages: %u ms_branch_pages: %u ms_leaf_pages: %u ms_overflow_pages: %u",
-        lst->used_pages, mst.ms_branch_pages, mst.ms_leaf_pages, mst.ms_overflow_pages);
     lst->alocated_pages = mei.me_last_pgno + 1;
     lst->entries        = mst.ms_entries;
 
