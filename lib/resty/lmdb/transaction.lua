@@ -4,6 +4,7 @@ local _M = {}
 local ffi = require("ffi")
 local base = require("resty.core.base")
 local table_new = require("table.new")
+local tpool = require("resty.lmdb.tpool")
 
 
 ffi.cdef([[
@@ -42,12 +43,18 @@ local type = type
 local C = ffi.C
 local ffi_string = ffi.string
 local ffi_new = ffi.new
+local tpool_fetch = tpool.fetch
+local tpool_release = tpool.release
+
+
 local MIN_OPS_N = 16
 local DEFAULT_VALUE_BUF_SIZE = 16 * 1024 -- 16KB
 base.set_string_buf_size(DEFAULT_VALUE_BUF_SIZE)
 local NGX_ERROR = ngx.ERROR
 local NGX_AGAIN = ngx.AGAIN
 local NGX_OK = ngx.OK
+
+
 local _TXN_MT = {}
 _TXN_MT.__index = _TXN_MT
 
@@ -121,6 +128,10 @@ end
 
 
 function _TXN_MT:reset()
+    for i = 1, self.n do
+        tpool_release(self[i])
+    end
+
     self.n = 0
     self.write = false
 end
@@ -132,7 +143,7 @@ function _TXN_MT:_new_op()
 
     local op = self[n]
     if not op then
-        op = table_new(0, 4)
+        op = tpool_fetch(0, 4)
         self[n] = op
     end
 
