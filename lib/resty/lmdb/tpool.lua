@@ -31,7 +31,7 @@ end
 
 function _M.release(obj)
     if not obj then
-        error("object empty", 2)
+        return
     end
 
     cleartab(obj)
