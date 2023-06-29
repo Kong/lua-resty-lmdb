@@ -44,7 +44,7 @@ __DATA__
             ngx.say(info["page_size"])
             ngx.say(info["max_readers"])
             ngx.say(info["num_readers"])
-            ngx.say(info["alocated_pages"])
+            ngx.say(info["allocated_pages"])
             ngx.say(info["used_pages"])
             ngx.say(info["entries"])
         }
@@ -112,8 +112,7 @@ GET /t
             ngx.say(info["page_size"])
 
             local used_pages =  info["used_pages"]
-                        local cjson = require("cjson")
-            ngx.say(used_pages >= old_used_pages)
+            ngx.say(used_pages > old_used_pages)
         }
     }
 --- request
@@ -141,6 +140,7 @@ true
         content_by_lua_block {
             local txn = require("resty.lmdb.transaction")
             local l = require("resty.lmdb")
+            local cjson = require("cjson")
 
             l.set("testbalabala", "aaaa")
             ngx.say(l.db_drop(false))
@@ -149,7 +149,8 @@ true
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
             local old_used_pages = info["used_pages"]
-            local old_alocated_pages = info["alocated_pages"]
+            local old_allocated_pages = info["allocated_pages"]
+            ngx.say("old_entries: ", info["entries"])
             local t = txn.begin()
             t:get("not_found")
             t:set("test", "value")
@@ -170,10 +171,11 @@ true
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
+                        ngx.say("entries: ", info["entries"])
             local used_pages =  info["used_pages"]
-            local alocated_pages = info["alocated_pages"]
-            ngx.say(used_pages >= old_used_pages)
-            ngx.say(alocated_pages >= old_alocated_pages)
+            local allocated_pages = info["allocated_pages"]
+            ngx.say(used_pages > old_used_pages)
+            ngx.say(allocated_pages > old_allocated_pages)
         }
     }
 --- request
