@@ -79,7 +79,7 @@ Get the LMDB database runtime information. `status` table struct as below.
     "allocated_pages": 2,
     "in_use_pages": 0,
     "entries": 0,
-    "map_size": 10485760
+    "map_size": 10485760 # in bytes
 }
 ```
 
