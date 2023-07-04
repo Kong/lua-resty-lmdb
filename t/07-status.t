@@ -45,7 +45,7 @@ __DATA__
             ngx.say(info["max_readers"])
             ngx.say(info["num_readers"])
             ngx.say(info["allocated_pages"])
-            ngx.say(info["used_pages"])
+            ngx.say(info["in_use_pages"])
             ngx.say(info["entries"])
         }
     }
@@ -102,7 +102,7 @@ GET /t
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
 
-            local old_used_pages = info["used_pages"]
+            local old_in_use_pages = info["in_use_pages"]
             local a = string.rep("Abcdef", 5000)
             ngx.say(l.set("test", a))
             ngx.say(l.get("test_not_exist"))
@@ -111,8 +111,8 @@ GET /t
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
 
-            local used_pages =  info["used_pages"]
-            ngx.say(used_pages > old_used_pages)
+            local in_use_pages =  info["in_use_pages"]
+            ngx.say(in_use_pages > old_in_use_pages)
         }
     }
 --- request
@@ -148,7 +148,7 @@ true
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
-            local old_used_pages = info["used_pages"]
+            local old_in_use_pages = info["in_use_pages"]
             local old_allocated_pages = info["allocated_pages"]
             ngx.say("old_entries: ", info["entries"])
             local t = txn.begin()
@@ -172,9 +172,9 @@ true
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
                         ngx.say("entries: ", info["entries"])
-            local used_pages =  info["used_pages"]
+            local in_use_pages =  info["in_use_pages"]
             local allocated_pages = info["allocated_pages"]
-            ngx.say(used_pages > old_used_pages)
+            ngx.say(in_use_pages > old_in_use_pages)
             ngx.say(allocated_pages > old_allocated_pages)
         }
     }

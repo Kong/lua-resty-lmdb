@@ -47,7 +47,7 @@ typedef struct {
     unsigned int    max_readers;     /**< max reader slots in the environment */
     unsigned int    num_readers;     /**< max reader slots used in the environment */
     unsigned int    allocated_pages;  /**< number of pages allocated */
-    size_t          used_pages;      /**< number of pages used */
+    size_t          in_use_pages;      /**< number of pages used */
     unsigned int    entries;         /**< the number of entries (key/value pairs) in the environment */
 } ngx_lua_resty_lmdb_ffi_status_t;
 
