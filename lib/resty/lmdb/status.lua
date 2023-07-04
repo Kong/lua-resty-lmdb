@@ -17,8 +17,8 @@ ffi.cdef([[
         unsigned int    page_size;       /**< Size of a database page. */
         unsigned int    max_readers;     /**< max reader slots in the environment */
         unsigned int    num_readers;     /**< max reader slots used in the environment */
-        unsigned int    allocated_pages;  /**< number of pages allocated */
-        size_t          in_use_pages;      /**< number of pages used */
+        unsigned int    allocated_pages; /**< number of pages allocated */
+        size_t          in_use_pages;    /**< number of pages used */
         unsigned int    entries;         /**< the number of entries (key/value pairs) in the environment */
     } ngx_lua_resty_lmdb_ffi_status_t;
 
@@ -36,13 +36,13 @@ function _M.get_env_info()
     assert(env_status[0] ~= nil)
 
     return {
-        map_size       = tonumber(env_status[0].map_size),
-        page_size      = tonumber(env_status[0].page_size),
-        max_readers    = tonumber(env_status[0].max_readers),
-        num_readers    = tonumber(env_status[0].num_readers),
+        map_size        = tonumber(env_status[0].map_size),
+        page_size       = tonumber(env_status[0].page_size),
+        max_readers     = tonumber(env_status[0].max_readers),
+        num_readers     = tonumber(env_status[0].num_readers),
         allocated_pages = tonumber(env_status[0].allocated_pages),
-        in_use_pages     = tonumber(env_status[0].in_use_pages),
-        entries        = tonumber(env_status[0].entries),
+        in_use_pages    = tonumber(env_status[0].in_use_pages),
+        entries         = tonumber(env_status[0].entries),
     }
 end
 

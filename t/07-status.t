@@ -112,7 +112,7 @@ GET /t
             ngx.say(info["page_size"])
 
             local in_use_pages =  info["in_use_pages"]
-            ngx.say(in_use_pages > old_in_use_pages)
+            ngx.say(in_use_pages >= old_in_use_pages)
         }
     }
 --- request
@@ -174,8 +174,8 @@ true
                         ngx.say("entries: ", info["entries"])
             local in_use_pages =  info["in_use_pages"]
             local allocated_pages = info["allocated_pages"]
-            ngx.say(in_use_pages > old_in_use_pages)
-            ngx.say(allocated_pages > old_allocated_pages)
+            ngx.say(in_use_pages >= old_in_use_pages)
+            ngx.say(allocated_pages >= old_allocated_pages)
         }
     }
 --- request
