@@ -41,6 +41,10 @@ struct ngx_lua_resty_lmdb_operation_s {
     unsigned int                    flags; /* SET, DROP */
 };
 
+
+typedef struct ngx_lua_resty_lmdb_operation_s ngx_lua_resty_lmdb_operation_t;
+
+
 typedef struct {
     size_t          map_size;        /**< Size of the data memory map */
     unsigned int    page_size;       /**< Size of a database page. */
@@ -50,8 +54,6 @@ typedef struct {
     size_t          in_use_pages;    /**< number of pages used */
     unsigned int    entries;         /**< the number of entries (key/value pairs) in the environment */
 } ngx_lua_resty_lmdb_ffi_status_t;
-
-typedef struct ngx_lua_resty_lmdb_operation_s ngx_lua_resty_lmdb_operation_t;
 
 
 extern ngx_module_t ngx_lua_resty_lmdb_module;

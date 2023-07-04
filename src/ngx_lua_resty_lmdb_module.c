@@ -248,7 +248,6 @@ ngx_lua_resty_lmdb_create_env(ngx_cycle_t *cycle,
     int                        block_size = 0;
     u_char                     keybuf[2048];
 
-
     rc = mdb_env_create(&lcf->env);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
@@ -273,41 +272,45 @@ ngx_lua_resty_lmdb_create_env(ngx_cycle_t *cycle,
         goto failed;
     }
 
-    if (lcf->cipher != NULL) {
-        enckey.mv_data = keybuf;
-        enckey.mv_size = NGX_LUA_RESTY_LMDB_ENC_KEY_LEN;
+    if (lcf->cipher == NULL) {
+        return NGX_OK;
+    }
 
-        rc = ngx_lua_resty_lmdb_digest_key(&lcf->key_data, &enckey);
-        if (rc != 0) {
-            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                "unable to set LMDB encryption key, string to key");
-            goto failed;
-        }
+    /* setup lmdb encryption */
 
-        block_size = EVP_CIPHER_block_size(lcf->cipher);
-        if (block_size == 0) {
-            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                          "unable to set LMDB encryption key, block size");
-            goto failed;
-        }
+    enckey.mv_data = keybuf;
+    enckey.mv_size = NGX_LUA_RESTY_LMDB_ENC_KEY_LEN;
 
-        rc = mdb_env_set_encrypt(lcf->env, ngx_lua_resty_lmdb_cipher,
-                                 &enckey, block_size);
-        if (rc != 0) {
-            ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
-                          "unable to set LMDB encryption key: %s",
-                          mdb_strerror(rc));
-            goto failed;
-        }
+    rc = ngx_lua_resty_lmdb_digest_key(&lcf->key_data, &enckey);
+    if (rc != 0) {
+        ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+            "unable to set LMDB encryption key, string to key");
+        goto failed;
+    }
 
-        /* worker will destroy secret data */
-        if (is_master == 0) {
-            ngx_explicit_memzero(lcf->key_data.data, lcf->key_data.len);
-            ngx_explicit_memzero(lcf->encryption_mode.data, lcf->encryption_mode.len);
+    block_size = EVP_CIPHER_block_size(lcf->cipher);
+    if (block_size == 0) {
+        ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                      "unable to set LMDB encryption key, block size");
+        goto failed;
+    }
 
-            ngx_str_null(&lcf->key_data);
-            ngx_str_null(&lcf->encryption_mode);
-        }
+    rc = mdb_env_set_encrypt(lcf->env, ngx_lua_resty_lmdb_cipher,
+                             &enckey, block_size);
+    if (rc != 0) {
+        ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
+                      "unable to set LMDB encryption key: %s",
+                      mdb_strerror(rc));
+        goto failed;
+    }
+
+    /* worker will destroy secret data */
+    if (is_master == 0) {
+        ngx_explicit_memzero(lcf->key_data.data, lcf->key_data.len);
+        ngx_explicit_memzero(lcf->encryption_mode.data, lcf->encryption_mode.len);
+
+        ngx_str_null(&lcf->key_data);
+        ngx_str_null(&lcf->encryption_mode);
     }
 
     return NGX_OK;
@@ -677,41 +680,4 @@ ngx_lua_resty_lmdb_cipher(const MDB_val *src, MDB_val *dst,
     EVP_CIPHER_CTX_free(ctx);
 
     return rc == 0;
-}
-
-
-int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_status_t *lst, const char **err)
-{
-    ngx_lua_resty_lmdb_conf_t      *lcf;
-    MDB_stat                        mst;
-    MDB_envinfo                     mei;
-
-    lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(ngx_cycle->conf_ctx,
-                                                     ngx_lua_resty_lmdb_module);
-
-    if (lcf == NULL || lcf->env == NULL) {
-        *err = "no LMDB environment defined";
-        return NGX_ERROR;
-    }
-
-    if (mdb_env_stat(lcf->env, &mst)) {
-        *err = "mdb_env_stat() failed";
-        return NGX_ERROR;
-    }
-
-    if (mdb_env_info(lcf->env, &mei)) {
-        *err = "mdb_env_info() failed";
-        return NGX_ERROR;
-    }
-
-    lst->map_size           = mei.me_mapsize;
-    lst->page_size          = mst.ms_psize;
-    lst->max_readers        = mei.me_maxreaders;
-    lst->num_readers        = mei.me_numreaders;
-    lst->in_use_pages       = mst.ms_branch_pages + mst.ms_leaf_pages
-                                + mst.ms_overflow_pages;
-    lst->allocated_pages    = mei.me_last_pgno + 1;
-    lst->entries            = mst.ms_entries;
-
-    return NGX_OK;
 }
