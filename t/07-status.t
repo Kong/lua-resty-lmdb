@@ -140,7 +140,6 @@ true
         content_by_lua_block {
             local txn = require("resty.lmdb.transaction")
             local l = require("resty.lmdb")
-            local cjson = require("cjson")
 
             l.set("testbalabala", "aaaa")
             ngx.say(l.db_drop(false))
@@ -150,7 +149,6 @@ true
             ngx.say(info["page_size"])
             local old_in_use_pages = info["in_use_pages"]
             local old_allocated_pages = info["allocated_pages"]
-            ngx.say("old_entries: ", info["entries"])
             local t = txn.begin()
             t:get("not_found")
             t:set("test", "value")
@@ -171,7 +169,6 @@ true
             local info = l.get_env_info()
             ngx.say(info["map_size"])
             ngx.say(info["page_size"])
-                        ngx.say("entries: ", info["entries"])
             local in_use_pages =  info["in_use_pages"]
             local allocated_pages = info["allocated_pages"]
             ngx.say(in_use_pages >= old_in_use_pages)
