@@ -441,6 +441,8 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
                       mdb_strerror(rc));
     }
 
+failed:
+
     mdb_txn_abort(txn);
     return NGX_ERROR;
 }
@@ -529,9 +531,26 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
         return NGX_ERROR;
     }
 
+    /* check lmdb validation tag */
+
     if (ngx_lua_resty_lmdb_validate(cycle, lcf) != NGX_OK) {
         ngx_lua_resty_lmdb_close_file(cycle, lcf);
-        return NGX_ERROR;
+
+        /* remove lmdb files to clear data */
+        if (ngx_lua_resty_lmdb_remove_files(cycle, lcf->env_path) != NGX_OK) {
+            return NGX_ERROR;
+        }
+
+        /* open lmdb file again */
+        if (ngx_lua_resty_lmdb_open_file(cycle, lcf, 1) != NGX_OK) {
+            return NGX_ERROR;
+        }
+
+        /* write tag into lmdb */
+        if (ngx_lua_resty_lmdb_write_tag(cycle, lcf) != NGX_OK) {
+            ngx_lua_resty_lmdb_close_file(cycle, lcf);
+            return NGX_ERROR;
+        }
     }
 
     if (ngx_lua_resty_lmdb_close_file(cycle, lcf) != NGX_OK)  {
