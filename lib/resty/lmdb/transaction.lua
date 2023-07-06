@@ -265,8 +265,9 @@ function _TXN_MT:commit()
     end
 
 ::again::
+    local buf = get_string_buf(value_buf_size, false)
     local ret = C.ngx_lua_resty_lmdb_ffi_execute(ops, self.n, self.write,
-                    get_string_buf(value_buf_size, false), value_buf_size, err_ptr)
+                    buf, value_buf_size, err_ptr)
     if ret == NGX_ERROR then
         return nil, ffi_string(err_ptr[0])
     end
