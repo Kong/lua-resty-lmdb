@@ -601,3 +601,5 @@ static void ngx_lua_resty_lmdb_exit_worker(ngx_cycle_t *cycle)
         ngx_lua_resty_lmdb_close_file(cycle, lcf);
     }
 }
+
+
