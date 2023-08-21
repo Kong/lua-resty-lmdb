@@ -228,8 +228,6 @@ Set the size of the memory map, the default value is `1048576`(1MB).
 
 [Back to TOC](#table-of-contents)
 
-[Back to TOC](#table-of-contents)
-
 ## Copyright and license
 
 Copyright (c) 2021-2022 Kong, Inc.
