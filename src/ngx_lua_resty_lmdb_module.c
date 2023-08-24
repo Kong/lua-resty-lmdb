@@ -161,13 +161,14 @@ failed:
 
 
 static ngx_int_t
-ngx_lua_resty_lmdb_remove_files(ngx_cycle_t *cycle, ngx_path_t *path)
+ngx_lua_resty_lmdb_remove_files(ngx_cycle_t *cycle, ngx_lua_resty_lmdb_conf_t *lcf)
 {
     ngx_file_info_t   fi;
 
     u_char            name_buf[NGX_MAX_PATH];
     ngx_str_t        *names = ngx_lua_resty_lmdb_file_names;
     ngx_str_t        *name;
+    ngx_path_t       *path = lcf->env_path;
 
     ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
                   "LMDB database is corrupted or incompatible, removing");
@@ -244,7 +245,7 @@ ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
         mdb_env_close(lcf->env);
         lcf->env = NULL;
 
-        if (ngx_lua_resty_lmdb_remove_files(cycle, lcf->env_path) != NGX_OK) {
+        if (ngx_lua_resty_lmdb_remove_files(cycle, lcf) != NGX_OK) {
             return NGX_ERROR;
         }
 
@@ -537,7 +538,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
         ngx_lua_resty_lmdb_close_file(cycle, lcf);
 
         /* remove lmdb files to clear data */
-        if (ngx_lua_resty_lmdb_remove_files(cycle, lcf->env_path) != NGX_OK) {
+        if (ngx_lua_resty_lmdb_remove_files(cycle, lcf) != NGX_OK) {
             return NGX_ERROR;
         }
 
