@@ -422,7 +422,8 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
     rc = mdb_get(txn, dbi, &key, &value);
     if (rc == 0) {
         /* key found, compare with validation_tag value */
-        if (ngx_strncmp(lcf->validation_tag.data,
+        if (lcf->validation_tag.len == value.mv_size &&
+            ngx_strncmp(lcf->validation_tag.data,
                         value.mv_data, value.mv_size) == 0) {
 
             mdb_txn_abort(txn);
