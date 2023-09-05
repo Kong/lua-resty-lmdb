@@ -73,6 +73,7 @@ end
 
 local normalize_key
 do
+    local encode_base64url = require("ngx.base64").encode_base64url
     local resty_sha256 = assert(require("resty.sha256").new())
 
     -- lmdb has 511 bytes limitation for key
@@ -81,7 +82,7 @@ do
     local sha256 = function(str)
         resty_sha256:reset()
         resty_sha256:update(str)
-        return resty_sha256:final()
+        return encode_base64url(resty_sha256:final())
     end
 
     normalize_key = function(key)
