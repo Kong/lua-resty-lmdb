@@ -538,7 +538,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
     if (ngx_lua_resty_lmdb_validate(cycle, lcf) != NGX_OK) {
         ngx_lua_resty_lmdb_close_file(cycle, lcf);
 
-        /* remove lmdb files to clear data */
+        /* remove lmdb files to clean data */
         if (ngx_lua_resty_lmdb_remove_files(cycle, lcf) != NGX_OK) {
             return NGX_ERROR;
         }
