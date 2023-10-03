@@ -2,9 +2,11 @@ spec:
   authorities:
     - keyless:
         identities:
+          - issuer: https://accounts.google.com
+            subjectRegExp: .*@konghq.com$
           - issuer: https://github.com/login/oauth
             subjectRegExp: .*@konghq.com$
     - key:
-        kms: https://github.com/web-flow.gpg # whitelist / allow GITHUB default GPG key used during merge commits
+        kms: https://github.com/web-flow.gpg
     - key:
-        kms: https://github.com/gszr.gpg
+        kms: https://github.com/saisatishkarra.gpg
