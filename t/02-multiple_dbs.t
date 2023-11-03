@@ -35,6 +35,7 @@ __DATA__
 
             ngx.say(l.set("test", "value", "custom_db"))
             ngx.say(l.get("test", "custom_db"))
+            ngx.say(l.set("test", "value")) -- main DB
             ngx.say(l.get("not_exist"))
             ngx.say(l.get("test", "not_exist"))
             ngx.say(l.get("test", "not_exist1"))
@@ -46,6 +47,7 @@ GET /t
 --- response_body
 true
 value
+true
 nil
 nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
 nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
