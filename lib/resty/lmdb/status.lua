@@ -1,3 +1,7 @@
+local _M = {}
+
+
+require("resty.lmdb.ffi")
 local ffi = require("ffi")
 local base = require("resty.core.base")
 
@@ -8,22 +12,6 @@ local tonumber = tonumber
 local NGX_ERROR = ngx.ERROR
 
 local err_ptr = base.get_errmsg_ptr()
-
-local _M = {}
-
-ffi.cdef([[
-    typedef struct {
-        size_t          map_size;        /**< Size of the data memory map */
-        unsigned int    page_size;       /**< Size of a database page. */
-        unsigned int    max_readers;     /**< max reader slots in the environment */
-        unsigned int    num_readers;     /**< max reader slots used in the environment */
-        unsigned int    allocated_pages; /**< number of pages allocated */
-        size_t          in_use_pages;    /**< number of pages currently in-use */
-        unsigned int    entries;         /**< the number of entries (key/value pairs) in the environment */
-    } ngx_lua_resty_lmdb_ffi_status_t;
-
-    int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_status_t *lst, char **err);    
-]])
 
 
 function _M.get_env_info()

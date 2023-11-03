@@ -4,6 +4,7 @@ local _M = {}
 local transaction = require("resty.lmdb.transaction")
 local status = require("resty.lmdb.status")
 
+
 do
     local CACHED_TXN = transaction.begin(1)
 
