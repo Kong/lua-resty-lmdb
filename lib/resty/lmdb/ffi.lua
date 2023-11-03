@@ -41,5 +41,7 @@ int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_status_t *lst, char *
 
 
 int ngx_lua_resty_lmdb_ffi_execute(ngx_lua_resty_lmdb_operation_t *ops,
-    size_t n, int need_write, unsigned char *buf, size_t buf_len, char **err);
+    size_t n, int need_write, u_char *buf, size_t buf_len, char **err);
+int ngx_lua_resty_lmdb_ffi_range(ngx_lua_resty_lmdb_operation_t *ops,
+    size_t n, u_char *buf, size_t buf_len, char **err);
 ]])

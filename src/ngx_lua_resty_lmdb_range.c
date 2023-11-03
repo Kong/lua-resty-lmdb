@@ -61,32 +61,43 @@ int ngx_lua_resty_lmdb_ffi_range(ngx_lua_resty_lmdb_operation_t *ops,
         rc = mdb_cursor_get(cur, &key, &value, i == 0 ? MDB_SET_RANGE : MDB_NEXT);
         if (rc == 0) {
             /* key found, copy result into buf */
-            if (value.mv_size > buf_len) {
+            if (key.mv_size + value.mv_size > buf_len) {
                 mdb_cursor_close(cur);
                 mdb_txn_reset(txn);
 
                 return NGX_AGAIN;
             }
 
+            ops[i].key.data = buf;
+            ops[i].key.len = key.mv_size;
+            buf = ngx_cpymem(buf, key.mv_data, key.mv_size);
+
             ops[i].value.data = buf;
             ops[i].value.len = value.mv_size;
+            buf = ngx_cpymem(buf, value.mv_data, value.mv_size);
+
             ops[i].opcode = NGX_LMDB_OP_PREFIX;
 
-            buf = ngx_cpymem(buf, value.mv_data, value.mv_size);
-            buf_len -= value.mv_size;
+            buf_len -= key.mv_size + value.mv_size;
 
         } else if (rc == MDB_NOTFOUND) {
+            mdb_cursor_close(cur);
+            mdb_txn_reset(txn);
+
             return i;
 
         } else {
             *err = mdb_strerror(rc);
-            goto err;
+
+            mdb_cursor_close(cur);
+            mdb_txn_reset(txn);
+
+            return NGX_ERROR;
         }
     }
 
-err:
     mdb_cursor_close(cur);
     mdb_txn_reset(txn);
 
-    return NGX_ERROR;
+    return i;
 }
