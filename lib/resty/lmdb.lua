@@ -2,14 +2,14 @@ local _M = {}
 
 
 local transaction = require("resty.lmdb.transaction")
-local range = require("resty.lmdb.range")
+local prefix = require("resty.lmdb.prefix")
 local status = require("resty.lmdb.status")
 
 
 local next = next
 local error = error
 local assert = assert
-local range_page = range.page
+local prefix_page = prefix.page
 
 
 local CACHED_TXN = transaction.begin(1)
@@ -61,7 +61,7 @@ function _M.prefix(prefix, db)
         ::more::
         if not res then
             -- need to fetch more data
-            res, err_or_more = range_page(last, db)
+            res, err_or_more = prefix_page(last, prefix, db)
             if not res then
                 return nil, err_or_more
             end
@@ -72,7 +72,14 @@ function _M.prefix(prefix, db)
             end
 
             if i then
-                -- not the first call to prefix_page, skip the first key
+                -- not the first call to prefix_page
+                if res[1].key ~= last then
+                    return nil, "DB content changed while iterating"
+                end
+
+                -- this is not sufficient to prove DB content did not change,
+                -- but at least the resume point did not change.
+                -- skip the first key
                 i = 2
 
             else

@@ -2,12 +2,16 @@
 
 
 /*
- * This function is the FFI call used for range lookups.
- * It is very similar to `ngx_lua_resty_lmdb_ffi_execute` above,
+ * This function is the FFI call used for prefix lookups.
+ * It is very similar to `ngx_lua_resty_lmdb_ffi_execute` inside
+ * ngx_lua_resty_lmdb_transaction.c,
  * except we can only specify one key as the starting point at a time.
  *
- * The `ops[0]` will be the key to lookup, this function returns all keys
- * >= `ops[0].key` and up to `n` will be returned at a time.
+ * The `ops[0]` will be the resume point and ops[1] will be
+ * the desired prefix, this function returns all keys
+ * >= `ops[0].key` with the same prefix as ops[1].key and up to `n`
+ * will be returned at a time. They are usually not the same except
+ * for the call to return the first page result.
  *
  * Returns:
  * * >= 0        - number of keys found. If return < `n`, then it is the last
@@ -15,7 +19,7 @@
  * * `NGX_ERROR` - an error occurred, *err will contain the error string
  * * `NGX_AGAIN` - `buf_len` is not enough, try again with larger `buf`
  */
-int ngx_lua_resty_lmdb_ffi_range(ngx_lua_resty_lmdb_operation_t *ops,
+int ngx_lua_resty_lmdb_ffi_prefix(ngx_lua_resty_lmdb_operation_t *ops,
     size_t n, u_char *buf, size_t buf_len, const char **err)
 {
     ngx_lua_resty_lmdb_conf_t      *lcf;
@@ -25,9 +29,11 @@ int ngx_lua_resty_lmdb_ffi_range(ngx_lua_resty_lmdb_operation_t *ops,
     MDB_val                         key;
     MDB_val                         value;
     MDB_cursor                     *cur;
+    ngx_lua_resty_lmdb_operation_t  prefix;
 
-    ngx_lua_resty_lmdb_assert(n >= 1);
-    ngx_lua_resty_lmdb_assert(ops[0].opcode == NGX_LMDB_OP_PREFIX);
+    ngx_lua_resty_lmdb_assert(n >= 2);
+    prefix = ops[1];
+    ngx_lua_resty_lmdb_assert(prefix.opcode == NGX_LMDB_OP_PREFIX);
 
     lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(ngx_cycle->conf_ctx,
                                                      ngx_lua_resty_lmdb_module);
@@ -60,6 +66,18 @@ int ngx_lua_resty_lmdb_ffi_range(ngx_lua_resty_lmdb_operation_t *ops,
 
         rc = mdb_cursor_get(cur, &key, &value, i == 0 ? MDB_SET_RANGE : MDB_NEXT);
         if (rc == 0) {
+            /* is this still a prefix of saved prefix? */
+
+            if (key.mv_size < prefix.key.len
+                || ngx_memcmp(key.mv_data, prefix.key.data, prefix.key.len) != 0)
+            {
+                /* caller asked "123" but we got "13" */
+                mdb_cursor_close(cur);
+                mdb_txn_reset(txn);
+
+                return i;
+            }
+
             /* key found, copy result into buf */
             if (key.mv_size + value.mv_size > buf_len) {
                 mdb_cursor_close(cur);

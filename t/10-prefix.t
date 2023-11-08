@@ -38,8 +38,10 @@ __DATA__
             ngx.say(l.set("test1", "value1"))
             ngx.say(l.set("test2", "value2"))
             ngx.say(l.set("test3", "value3"))
+            ngx.say(l.set("u", "value4"))
+            ngx.say(l.set("u1", "value5"))
 
-            for k, v in l.prefix("test") do
+            for k, v in l.prefix("tes") do
                 ngx.say("key: ", k, " value: ", v)
             end
         }
@@ -47,6 +49,8 @@ __DATA__
 --- request
 GET /t
 --- response_body
+true
+true
 true
 true
 true
