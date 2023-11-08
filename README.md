@@ -5,8 +5,7 @@ inside the Nginx worker process. It has two parts, a core module built into Ngin
 controls the life cycle of the database environment, and a FFI based Lua binding for
 interacting with the module to access/change data.
 
-Table of Contents
-=================
+# Table of Contents
 
 * [lua-resty-lmdb](#lua-resty-lmdb)
     * [APIs](#apis)
@@ -15,6 +14,7 @@ Table of Contents
             * [set](#set)
             * [get_env_info](#get_env_info)
         * [db\_drop](#db_drop)
+        * [prefix](#prefix)
         * [resty.lmdb.transaction](#restylmdbtransaction)
             * [reset](#reset)
             * [get](#get)
@@ -22,7 +22,9 @@ Table of Contents
             * [db\_open](#db_open)
             * [db\_drop](#db_drop)
             * [commit](#commit)
-    * [Directives](#Directives)
+        * [resty.lmdb.prefix](#restylmdbprefix)
+            * [reset](#reset)
+    * [Directives](#directives)
         * [lmdb_environment_path](#lmdb_environment_path)
         * [lmdb_max_databases](#lmdb_max_databases)
         * [lmdb_map_size](#lmdb_map_size)
@@ -98,17 +100,41 @@ In case of error, `nil` and a string describing the error will be returned inste
 
 [Back to TOC](#table-of-contents)
 
-### resty.lmdb.transaction
+### prefix
 
-**syntax:** *local txn = transaction.begin(hint?)*
+**syntax:** *for key, value in lmdb.prefix(prefix) do*
 
 **context:** *any context*
 
-Creates a new LMDB transaction object. This does not actually starts the transaction, but only creates
-a Lua table that stores the operations for execution later. If `hint` is provided then the Lua table holding
-the operations will be pre-allocated to store `hint` operations.
+Returns all key and their associated value for keys starting with `prefix`.
+For example, if the database contains:
+
+```
+key1: value1
+key11: value11
+key2: value2
+```
+
+Then a call of `lmdb.prefix("key")` will yield `key1`, `key11` and `key2` respectively.
+
+In case of errors while fetching from LMDB, `key` will be `nil` and `value` will be
+a string describing the error. The caller must anticipate this happening and check each return
+value carefully before consuming.
+
+**Warning on transaction safety:** Since the number of keys that could potentially
+be returned with this method could be very large, this method does not return all
+results inside a single transaction as this will be very expensive. Instead, this
+method gets keys from LMDB in batches using different read transaction. Therefore, it
+is possible that the database content has changed between batches. We may introduce a
+mechanism for detecting this case in the future, but for now there is a small opportunity
+for this to happen and you should guard your application for concurrent writes if this
+is a huge concern. This function makes best effort to detect when database content
+definitely changed between iterations, in this case `nil, "DB content changed while iterating"`
+will be returned from the iterator.
 
 [Back to TOC](#table-of-contents)
+
+### resty.lmdb.transaction
 
 #### reset
 
@@ -193,6 +219,26 @@ output will be inside `txn[1]` and second operation's result will be inside `txn
 In case of any error during the transaction, it will be rolled back and `nil` and
 an string describing the reason of the failure will be returned instead. Accessing the output value
 from the `txn` table when `commit()` returned an error is undefined.
+
+[Back to TOC](#table-of-contents)
+
+### resty.lmdb.prefix
+
+#### page
+
+**syntax:** *res, err = prefix.page(start, prefix, db?)*
+
+**context:** *any context*
+
+Return all keys `>= start` and starts with `prefix`. If `db` is omitted,
+it defaults to `"_default"`.
+
+The return value of this function is a table `res` where `res[1].key` and `res[1].value`
+corresponds to the first key and value, `res[2].key` and `res[2].value` corresponds to the
+second and etc. If no keys matched the provided criteria, then an empty table will be
+returned.
+
+In case of errors, `nil` and an string describing the reason of the failure will be returned.
 
 [Back to TOC](#table-of-contents)
 
