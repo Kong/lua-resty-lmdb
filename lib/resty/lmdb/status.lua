@@ -1,7 +1,7 @@
 local _M = {}
 
 
-require("resty.lmdb.ffi")
+require("resty.lmdb.cdefs")
 local ffi = require("ffi")
 local base = require("resty.core.base")
 

@@ -3,7 +3,7 @@ local _M = {}
 
 local ffi = require("ffi")
 local table_new = require("table.new")
-require("resty.lmdb.ffi")
+require("resty.lmdb.cdefs")
 local transaction = require("resty.lmdb.transaction")
 local base = require("resty.core.base")
 
