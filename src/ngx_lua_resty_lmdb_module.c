@@ -461,9 +461,6 @@ ngx_lua_resty_lmdb_write_tag(ngx_cycle_t *cycle,
     MDB_val                    value;
     MDB_txn                   *txn = NULL;
 
-    ngx_str_t                  validation_key =
-                                    ngx_string(NGX_LUA_RESTY_LMDB_VALIDATION_KEY);
-
     ngx_lua_resty_lmdb_assert(lcf->validation_tag.data);
 
     rc = mdb_txn_begin(lcf->env, NULL, 0, &txn);
@@ -486,8 +483,8 @@ ngx_lua_resty_lmdb_write_tag(ngx_cycle_t *cycle,
 
     /* set tag value to lmdb db */
 
-    key.mv_size = validation_key.len;
-    key.mv_data = validation_key.data;
+    key.mv_size = sizeof(NGX_LUA_RESTY_LMDB_VALIDATION_KEY) - 1;
+    key.mv_data = NGX_LUA_RESTY_LMDB_VALIDATION_KEY;
 
     value.mv_size = lcf->validation_tag.len;
     value.mv_data = lcf->validation_tag.data;
