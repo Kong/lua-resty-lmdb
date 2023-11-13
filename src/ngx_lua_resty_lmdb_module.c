@@ -6,7 +6,7 @@
 
 
 #define NGX_LUA_RESTY_LMDB_VALIDATION_KEY  "validation_tag"
-#define NGX_LUA_RESTY_LMDB_DEFAULT_DB      "_default"
+#define NGX_LUA_RESTY_LMDB_UNNAMED_DB      NULL
 
 
 static ngx_str_t ngx_lua_resty_lmdb_file_names[] = {
@@ -407,7 +407,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
 
     ngx_lua_resty_lmdb_assert(txn);
 
-    rc = mdb_dbi_open(txn, NGX_LUA_RESTY_LMDB_DEFAULT_DB, MDB_CREATE, &dbi);
+    rc = mdb_dbi_open(txn, NGX_LUA_RESTY_LMDB_UNNAMED_DB, MDB_CREATE, &dbi);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to open LMDB database: %s",
@@ -476,7 +476,7 @@ ngx_lua_resty_lmdb_write_tag(ngx_cycle_t *cycle,
 
     ngx_lua_resty_lmdb_assert(txn);
 
-    rc = mdb_dbi_open(txn, NGX_LUA_RESTY_LMDB_DEFAULT_DB, MDB_CREATE, &dbi);
+    rc = mdb_dbi_open(txn, NGX_LUA_RESTY_LMDB_UNNAMED_DB, MDB_CREATE, &dbi);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to open LMDB database: %s",

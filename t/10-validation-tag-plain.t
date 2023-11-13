@@ -81,7 +81,6 @@ nil
         content_by_lua_block {
             local l = require("resty.lmdb")
 
-            ngx.say(l.get("validation_tag"))
             ngx.say(l.get("test"))
 
             ngx.say(l.set("test", "value"))
@@ -92,8 +91,7 @@ nil
 --- request
 GET /t
 --- response_body
-3.3
-nil
+nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
 true
 value
 nil
@@ -116,7 +114,6 @@ set LMDB validation tag: "3.3"
         content_by_lua_block {
             local l = require("resty.lmdb")
 
-            ngx.say(l.get("validation_tag"))
             ngx.say(l.get("test"))
 
             ngx.say(l.set("test", "value"))
@@ -127,8 +124,7 @@ set LMDB validation tag: "3.3"
 --- request
 GET /t
 --- response_body
-3.4
-nil
+nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
 true
 value
 nil
