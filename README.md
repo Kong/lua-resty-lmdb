@@ -240,6 +240,9 @@ When LMDB starts, it will check the tag value,
 if the value is different from the directive value,
 the content of LMDB will be cleaned up.
 
+The default value is null string,
+and this feature will be disabled.
+
 [Back to TOC](#table-of-contents)
 
 ## Copyright and license
