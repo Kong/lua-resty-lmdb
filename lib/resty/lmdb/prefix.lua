@@ -43,7 +43,7 @@ function _M.page(start, prefix, db)
         return nil, "unable to open DB for access: " .. err
 
     elseif not dbi then
-        return nil, "DB " .. lop.db .. " does not exist"
+        return nil, "DB " .. db .. " does not exist"
     end
 
     ops[0].dbi = dbi
