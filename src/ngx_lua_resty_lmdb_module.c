@@ -170,9 +170,6 @@ ngx_lua_resty_lmdb_remove_files(ngx_cycle_t *cycle, ngx_lua_resty_lmdb_conf_t *l
     ngx_str_t        *name;
     ngx_path_t       *path = lcf->env_path;
 
-    ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
-                  "LMDB database is corrupted or incompatible, removing");
-
     if (ngx_file_info(path->name.data, &fi) == NGX_FILE_ERROR) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, ngx_errno,
                       ngx_file_info_n " \"%s\" failed", path->name.data);
@@ -244,6 +241,9 @@ ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
 
         mdb_env_close(lcf->env);
         lcf->env = NULL;
+
+        ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
+                      "LMDB database is corrupted or incompatible, removing");
 
         if (ngx_lua_resty_lmdb_remove_files(cycle, lcf) != NGX_OK) {
             return NGX_ERROR;
@@ -540,10 +540,10 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
     /* check lmdb validation tag */
 
     if (ngx_lua_resty_lmdb_validate(cycle, lcf) != NGX_OK) {
-        ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
-                      "LMDB database is removed for tag validation failure");
-
         ngx_lua_resty_lmdb_close_file(cycle, lcf);
+
+        ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
+                      "LMDB database tag validation fails, removing");
 
         /* remove lmdb files to clean data */
         if (ngx_lua_resty_lmdb_remove_files(cycle, lcf) != NGX_OK) {

@@ -7,7 +7,7 @@ use Cwd qw(cwd);
 
 repeat_each(1);
 
-plan tests => repeat_each() * blocks() * 6;
+plan tests => repeat_each() * blocks() * 7 + 1;
 
 my $pwd = cwd();
 
@@ -65,9 +65,8 @@ true
 value
 nil
 nil
---- error_log
-LMDB validation disabled
 --- no_error_log
+[warn]
 [error]
 [warn]
 [crit]
@@ -98,7 +97,9 @@ true
 value
 nil
 --- error_log
-LMDB has no validation_tag
+LMDB validation enabled, using validation tag: "3.3"
+LMDB validation tag does not exist
+LMDB database tag validation fails, removing
 --- no_error_log
 [emerg]
 [error]
@@ -130,7 +131,9 @@ true
 value
 nil
 --- error_log
-LMDB validation failed
+LMDB validation enabled, using validation tag: "3.4"
+LMDB tag "3.3" did not match configured tag "3.4"
+LMDB database tag validation fails, removing
 --- no_error_log
 [emerg]
 [error]
