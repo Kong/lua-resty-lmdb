@@ -6,7 +6,6 @@ use Test::Nginx::Socket::Lua;
 use Cwd qw(cwd);
 
 repeat_each(1);
-no_shuffle();
 
 plan tests => repeat_each() * blocks() * 7 + 2;
 
