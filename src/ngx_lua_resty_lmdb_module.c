@@ -415,7 +415,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         goto failed;
     }
 
-    key.mv_size = sizeof(NGX_LUA_RESTY_LMDB_VALIDATION_KEY);
+    key.mv_size = sizeof(NGX_LUA_RESTY_LMDB_VALIDATION_KEY) - 1;
     key.mv_data = NGX_LUA_RESTY_LMDB_VALIDATION_KEY;
 
     rc = mdb_get(txn, dbi, &key, &value);
@@ -430,7 +430,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         }
 
         ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
-                      "LMDB tag \"%*s\" did not match configured tag \"%V\"",
+                      "LMDB validation tag \"%*s\" did not match configured tag \"%V\"",
                       value.mv_size, value.mv_data,
                       &lcf->validation_tag);
 
@@ -440,7 +440,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
 
     } else {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
-                      "unable to get LMDB validation_tag : %s",
+                      "unable to get LMDB validation tag: %s",
                       mdb_strerror(rc));
     }
 
@@ -479,7 +479,7 @@ ngx_lua_resty_lmdb_write_tag(ngx_cycle_t *cycle,
     rc = mdb_dbi_open(txn, NGX_LUA_RESTY_LMDB_DEFAULT_DB, MDB_CREATE, &dbi);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
-                      "unable to open LMDB database : %s",
+                      "unable to open LMDB database: %s",
                       mdb_strerror(rc));
         goto failed;
     }
@@ -495,7 +495,7 @@ ngx_lua_resty_lmdb_write_tag(ngx_cycle_t *cycle,
     rc = mdb_put(txn, dbi, &key, &value, 0);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
-                      "unable to set LMDB validation_tag : %s",
+                      "unable to set LMDB validation tag: %s",
                       mdb_strerror(rc));
         goto failed;
     }
@@ -503,10 +503,14 @@ ngx_lua_resty_lmdb_write_tag(ngx_cycle_t *cycle,
     rc = mdb_txn_commit(txn);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
-                      "unable to commit LMDB : %s",
+                      "unable to commit LMDB: %s",
                       mdb_strerror(rc));
         goto failed;
     }
+
+    ngx_log_debug1(NGX_LOG_DEBUG_CORE, cycle->log, 0,
+                   "set LMDB validation tag: \"%V\"",
+                   &lcf->validation_tag);
 
     return NGX_OK;
 
