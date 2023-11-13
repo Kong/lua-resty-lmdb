@@ -65,8 +65,9 @@ true
 value
 nil
 nil
+--- error_log
+LMDB validation disabled
 --- no_error_log
-[warn]
 [error]
 [warn]
 [crit]
