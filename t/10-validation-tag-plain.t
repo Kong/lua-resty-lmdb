@@ -66,6 +66,7 @@ value
 nil
 nil
 --- no_error_log
+[warn]
 [error]
 [warn]
 [crit]
