@@ -394,7 +394,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         return NGX_OK;
     }
 
-    ngx_log_debug0(NGX_LOG_DEBUG_CORE, cycle->log, 0,
+    ngx_log_debug1(NGX_LOG_DEBUG_CORE, cycle->log, 0,
                    "LMDB validation enabled, using validation tag: \"%V\"",
                    &lcf->validation_tag);
 
@@ -413,7 +413,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
     rc = mdb_dbi_open(txn, NGX_LUA_RESTY_LMDB_DEFAULT_DB, MDB_CREATE, &dbi);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
-                      "unable to open LMDB database : %s",
+                      "unable to open LMDB database: %s",
                       mdb_strerror(rc));
         goto failed;
     }
@@ -433,11 +433,13 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
         }
 
         ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
-                      "LMDB validation failed");
+                      "LMDB tag \"%*s\" did not match configured tag \"%V\"",
+                      value.mv_size, value.mv_data,
+                      &lcf->validation_tag);
 
     } else if (rc == MDB_NOTFOUND) {
         ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
-                      "LMDB has no validation_tag");
+                      "LMDB validation tag does not exist");
 
     } else {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
@@ -538,6 +540,9 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
     /* check lmdb validation tag */
 
     if (ngx_lua_resty_lmdb_validate(cycle, lcf) != NGX_OK) {
+        ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
+                      "LMDB database is removed for tag validation failure");
+
         ngx_lua_resty_lmdb_close_file(cycle, lcf);
 
         /* remove lmdb files to clean data */
