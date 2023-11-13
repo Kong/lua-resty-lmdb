@@ -6,6 +6,7 @@ use Test::Nginx::Socket::Lua;
 use Cwd qw(cwd);
 
 repeat_each(1);
+no_shuffle();
 
 plan tests => repeat_each() * blocks() * 7 + 1;
 
@@ -99,7 +100,7 @@ nil
 --- error_log
 LMDB validation enabled, using validation tag: "3.3"
 LMDB validation tag does not exist
-LMDB database tag validation fails, removing
+LMDB database tag mismatch, wiping the database
 --- no_error_log
 [emerg]
 [error]
@@ -133,7 +134,7 @@ nil
 --- error_log
 LMDB validation enabled, using validation tag: "3.4"
 LMDB tag "3.3" did not match configured tag "3.4"
-LMDB database tag validation fails, removing
+LMDB database tag mismatch, wiping the database
 --- no_error_log
 [emerg]
 [error]
