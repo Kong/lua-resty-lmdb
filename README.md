@@ -241,7 +241,7 @@ if the value is different from the directive value,
 the content of LMDB will be cleaned up.
 
 The default value is null string,
-and this feature will be disabled.
+which means this feature is disabled by default.
 
 [Back to TOC](#table-of-contents)
 
