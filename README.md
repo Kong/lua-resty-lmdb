@@ -242,7 +242,7 @@ When LMDB starts, it will check the tag value,
 if the value is different from the directive value,
 the content of LMDB will be cleaned up.
 
-When this directive is not set, tag is not validated.
+When this directive is not set, tag validation is disabled.
 
 [Back to TOC](#table-of-contents)
 
