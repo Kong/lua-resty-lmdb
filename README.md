@@ -233,6 +233,8 @@ Set the size of the memory map, the default value is `1048576`(1MB).
 
 **syntax:** *lmdb_validation_tag value;*
 
+**default:** *none*
+
 **context:** *main*
 
 Set a content validation tag into LMDB.
@@ -240,8 +242,7 @@ When LMDB starts, it will check the tag value,
 if the value is different from the directive value,
 the content of LMDB will be cleaned up.
 
-The default value is null string,
-which means this feature is disabled by default.
+When this directive is not set, tag is not validated.
 
 [Back to TOC](#table-of-contents)
 
