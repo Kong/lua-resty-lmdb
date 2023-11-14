@@ -387,8 +387,6 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
     /* check tag value in lmdb */
 
     if (lcf->validation_tag.data == NULL) {
-        ngx_log_debug0(NGX_LOG_DEBUG_CORE, cycle->log, 0,
-                       "LMDB validation disabled");
         return NGX_OK;
     }
 
