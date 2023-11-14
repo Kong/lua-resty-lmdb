@@ -540,7 +540,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
         ngx_lua_resty_lmdb_close_file(cycle, lcf);
 
         ngx_log_error(NGX_LOG_WARN, cycle->log, 0,
-                      "LMDB database tag mismatch, wiping the database");
+                      "LMDB validation tag mismatch, wiping the database");
 
         /* remove lmdb files to clean data */
         if (ngx_lua_resty_lmdb_remove_files(cycle, lcf) != NGX_OK) {

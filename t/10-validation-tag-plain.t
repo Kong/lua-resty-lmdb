@@ -96,7 +96,7 @@ nil
 --- error_log
 LMDB validation enabled, using validation tag: "3.3"
 LMDB validation tag does not exist
-LMDB database tag mismatch, wiping the database
+LMDB validation tag mismatch, wiping the database
 set LMDB validation tag: "3.3"
 --- no_error_log
 [emerg]
@@ -129,7 +129,7 @@ nil
 --- error_log
 LMDB validation enabled, using validation tag: "3.4"
 LMDB validation tag "3.3" did not match configured tag "3.4"
-LMDB database tag mismatch, wiping the database
+LMDB validation tag mismatch, wiping the database
 set LMDB validation tag: "3.4"
 --- no_error_log
 [emerg]
