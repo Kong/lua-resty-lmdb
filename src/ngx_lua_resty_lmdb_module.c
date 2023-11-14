@@ -499,7 +499,7 @@ ngx_lua_resty_lmdb_write_tag(ngx_cycle_t *cycle,
     rc = mdb_txn_commit(txn);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
-                      "unable to commit LMDB: %s",
+                      "unable to commit validation tag into LMDB: %s",
                       mdb_strerror(rc));
         return NGX_ERROR;
     }
