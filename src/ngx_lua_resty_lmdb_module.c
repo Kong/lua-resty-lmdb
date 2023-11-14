@@ -501,7 +501,7 @@ ngx_lua_resty_lmdb_write_tag(ngx_cycle_t *cycle,
         ngx_log_error(NGX_LOG_ERR, cycle->log, 0,
                       "unable to commit LMDB: %s",
                       mdb_strerror(rc));
-        goto failed;
+        return NGX_ERROR;
     }
 
     ngx_log_debug1(NGX_LOG_DEBUG_CORE, cycle->log, 0,
