@@ -26,6 +26,7 @@ Table of Contents
         * [lmdb_environment_path](#lmdb_environment_path)
         * [lmdb_max_databases](#lmdb_max_databases)
         * [lmdb_map_size](#lmdb_map_size)
+        * [lmdb_validation_tag](#lmdb_validation_tag)
     * [Copyright and license](#copyright-and-license)
 
 ## APIs
@@ -225,6 +226,23 @@ Set the maximum number of named databases, the default value is `1`.
 **context:** *main*
 
 Set the size of the memory map, the default value is `1048576`(1MB).
+
+[Back to TOC](#table-of-contents)
+
+### lmdb_validation_tag
+
+**syntax:** *lmdb_validation_tag value;*
+
+**default:** *none*
+
+**context:** *main*
+
+Set a content validation tag into LMDB.
+When LMDB starts, it will check the tag value,
+if the value is different from the directive value,
+the content of LMDB will be cleaned up.
+
+When this directive is not set, tag validation is disabled.
 
 [Back to TOC](#table-of-contents)
 
