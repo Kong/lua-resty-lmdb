@@ -8,9 +8,20 @@ local status = require("resty.lmdb.status")
 
 local assert = assert
 local prefix_page = prefix.page
+local get_phase = ngx.get_phase
+local ngx_sleep = ngx.sleep
 
 
 local CACHED_TXN = transaction.begin(1)
+local CAN_YIELD_PHASES = {
+    ["rewrite"] = true,
+    ["access"] = true,
+    ["content"] = true,
+    ["timer"] = true,
+    ["ssl_cert"] = true,
+    ["ssl_session_store"] = true,
+    ["ssl_session_fetch"] = true,
+}
 
 
 function _M.get(key, db)
@@ -54,6 +65,7 @@ end
 function _M.prefix(prefix, db)
     local res, i, res_n, err_or_more
     local last = prefix
+    local can_yield = CAN_YIELD_PHASES[get_phase()]
 
     return function()
         ::more::
@@ -92,6 +104,11 @@ function _M.prefix(prefix, db)
             if err_or_more then
                 last = res[i - 1].key
                 res = nil
+
+                if can_yield then
+                    ngx_sleep(0)
+                end
+
                 goto more
             end
 
