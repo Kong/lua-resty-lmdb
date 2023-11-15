@@ -6,8 +6,6 @@ local prefix = require("resty.lmdb.prefix")
 local status = require("resty.lmdb.status")
 
 
-local next = next
-local error = error
 local assert = assert
 local prefix_page = prefix.page
 
