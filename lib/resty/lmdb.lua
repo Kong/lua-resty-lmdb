@@ -21,6 +21,7 @@ local CAN_YIELD_PHASES = {
     ["ssl_cert"] = true,
     ["ssl_session_store"] = true,
     ["ssl_session_fetch"] = true,
+    ["preread"] = true,
 }
 
 
