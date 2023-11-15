@@ -14,14 +14,15 @@ local ngx_sleep = ngx.sleep
 
 local CACHED_TXN = transaction.begin(1)
 local CAN_YIELD_PHASES = {
-    ["rewrite"] = true,
-    ["access"] = true,
-    ["content"] = true,
-    ["timer"] = true,
-    ["ssl_cert"] = true,
-    ["ssl_session_store"] = true,
-    ["ssl_session_fetch"] = true,
-    ["preread"] = true,
+    rewrite = true,
+    server_rewrite = true,
+    access = true,
+    content = true,
+    timer = true,
+    ssl_client_hello = true,
+    ssl_certificate = true,
+    ssl_session_fetch = true,
+    preread = true,
 }
 
 
