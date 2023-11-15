@@ -1,35 +1,10 @@
 local _M = {}
 
 
+require("resty.lmdb.cdefs")
 local ffi = require("ffi")
 local base = require("resty.core.base")
 local table_new = require("table.new")
-
-
-ffi.cdef([[
-typedef unsigned int 	MDB_dbi;
-
-
-typedef enum {
-    NGX_LMDB_OP_GET = 0,
-    NGX_LMDB_OP_SET,
-    NGX_LMDB_OP_DB_OPEN,
-    NGX_LMDB_OP_DB_DROP,
-} ngx_lua_resty_lmdb_operation_e;
-
-
-typedef struct {
-    ngx_lua_resty_lmdb_operation_e  opcode;
-    ngx_str_t                       key;   /* GET, SET */
-    ngx_str_t                       value; /* GET, SET */
-    MDB_dbi                         dbi;   /* ALL OPS */
-    unsigned int                    flags; /* SET, DROP */
-} ngx_lua_resty_lmdb_operation_t;
-
-
-int ngx_lua_resty_lmdb_ffi_execute(ngx_lua_resty_lmdb_operation_t *ops,
-    size_t n, int need_write, unsigned char *buf, size_t buf_len, char **err);
-]])
 
 
 local err_ptr = base.get_errmsg_ptr()
@@ -43,8 +18,6 @@ local C = ffi.C
 local ffi_string = ffi.string
 local ffi_new = ffi.new
 local MIN_OPS_N = 16
-local DEFAULT_VALUE_BUF_SIZE = 16 * 1024 -- 16KB
-base.set_string_buf_size(DEFAULT_VALUE_BUF_SIZE)
 local NGX_ERROR = ngx.ERROR
 local NGX_AGAIN = ngx.AGAIN
 local NGX_OK = ngx.OK
@@ -55,6 +28,7 @@ _TXN_MT.__index = _TXN_MT
 local CACHED_DBI = {}
 local MDB_CREATE = 0x40000
 local DEFAULT_DB = "_default"
+_M.DEFAULT_DB = DEFAULT_DB
 
 
 function _M.begin(hint)

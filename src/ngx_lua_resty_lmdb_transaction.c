@@ -1,6 +1,28 @@
 #include <ngx_lua_resty_lmdb_module.h>
 
 
+/*
+ * This function is the FFI call used for single key operations.
+ *
+ * Params:
+ * * `ops`          - operations array containing instructions to perform
+ * * `n`            - number of `ops`
+ * * `need_write`   - 1 if contains edit operations, 0 if not
+ * * `buf`          - results buf
+ * * `buf_len`      - size of buf
+ * * `err`          - err message output
+ *
+ * This function executes operations specified in `ops`. If the operation
+ * requires passing value back to the caller, then it is written to the
+ * `buf` buffer, up to `buf_len`. If the `buf` passed in is not large enough,
+ * then `NGX_AGAIN` is returned and the caller is instructed to retry with a
+ * larger buffer.
+ *
+ * Returns:
+ * * `NGX_OK`    - operations completed successfully
+ * * `NGX_ERROR` - an error occurred, *err will contain the error string
+ * * `NGX_AGAIN` - `buf_len` is not enough, try again with larger `buf`
+ */
 int ngx_lua_resty_lmdb_ffi_execute(ngx_lua_resty_lmdb_operation_t *ops,
     size_t n, int need_write, u_char *buf, size_t buf_len, const char **err)
 {
