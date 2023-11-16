@@ -132,6 +132,6 @@ LMDB validation tag "3.3" did not match configured tag "3.4"
 LMDB validation tag mismatch, wiping the database
 set LMDB validation tag: "3.4"
 --- no_error_log
-[warn]
+[emerg]
 [error]
 [crit]
