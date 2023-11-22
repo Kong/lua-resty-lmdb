@@ -545,7 +545,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
     if (rc != NGX_OK) {
         ngx_lua_resty_lmdb_close_file(cycle, lcf);
 
-        ngx_log_error(rc == NGX_DECLINED ? NGX_LOG_NOTICE : NGX_LOG_WARN,
+        ngx_log_error((rc == NGX_DECLINED ? NGX_LOG_NOTICE : NGX_LOG_WARN),
                       cycle->log, 0,
                       "LMDB validation tag mismatch, wiping the database");
 
