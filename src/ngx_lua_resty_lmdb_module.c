@@ -540,7 +540,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
 
     /* check lmdb validation tag */
 
-    rc = ngx_lua_resty_lmdb_validate(cycle, lcf)
+    rc = ngx_lua_resty_lmdb_validate(cycle, lcf);
 
     if (rc != NGX_OK) {
         ngx_lua_resty_lmdb_close_file(cycle, lcf);
