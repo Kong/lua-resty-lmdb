@@ -435,7 +435,7 @@ ngx_lua_resty_lmdb_validate(ngx_cycle_t *cycle,
 
     } else if (rc == MDB_NOTFOUND) {
         ngx_log_error(NGX_LOG_NOTICE, cycle->log, 0,
-                      "LMDB validation tag does not exist");
+                      "LMDB validation tag does not exist, assuming empty database");
 
         mdb_txn_abort(txn);
         return NGX_DECLINED;
