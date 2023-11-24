@@ -99,7 +99,7 @@ LMDB validation tag does not exist
 LMDB validation tag mismatch, wiping the database
 set LMDB validation tag: "3.3"
 --- no_error_log
-[emerg]
+[warn]
 [error]
 [crit]
 
