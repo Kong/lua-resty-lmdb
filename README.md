@@ -23,7 +23,7 @@ interacting with the module to access/change data.
             * [db\_drop](#db_drop)
             * [commit](#commit)
         * [resty.lmdb.prefix](#restylmdbprefix)
-            * [reset](#reset)
+            * [page](#page)
     * [Directives](#directives)
         * [lmdb_environment_path](#lmdb_environment_path)
         * [lmdb_max_databases](#lmdb_max_databases)
