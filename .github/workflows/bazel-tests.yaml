@@ -1,0 +1,52 @@
+name: Tests
+
+on:
+  pull_request: {}
+  push:
+    branches: [bazel]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-22.04
+    env: 
+      JOBS: 1
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        with:
+         submodules: true
+
+      - name: Setup tools
+        run: |
+          sudo apt-get install -qq -y cpanminus valgrind
+          sudo cpanm --notest Test::Nginx > build.log 2>&1 || (cat build.log && exit 1)
+
+      - name: Build Kong with current commit
+        run: |
+          git clone https://github.com/Kong/kong.git
+          cd kong
+          # replace lmdb branch with current commit
+          commit_sha="${GITHUB_SHA}"
+          sed -i "s/branch\s=\sKONG_VAR\[\"RESTY_LMDB_VERSION\"\]/commit = \"${commit_sha}\"/g"  $PWD/build/openresty/repositories.bzl
+
+          # build kong
+          make check-bazel
+          bazel build //build:kong --verbose_failures
+
+      - name: Run tests
+        run: |
+          export PATH=${PWD}/kong/bazel-bin/build/kong-dev/openresty/nginx/sbin:$PATH
+          TEST_NGINX_TIMEOUT=20 prove -j$JOBS -r t/
+
+      - name: Run Valgrind
+        run: |
+          export TEST_NGINX_VALGRIND='--num-callers=100 -q --tool=memcheck --leak-check=full --show-possibly-lost=no --gen-suppressions=all --suppressions=valgrind.suppress --track-origins=yes' TEST_NGINX_TIMEOUT=60 TEST_NGINX_SLEEP=1
+          export PATH=${PWD}/kong/bazel-bin/build/kong-dev/openresty/nginx/sbin:$PATH
+          stdbuf -o 0 -e 0 prove -j$JOBS -r t/ 2>&1 | grep -v "Connection refused" | grep -v "Retry connecting after" | tee output.log
+          if grep -q 'insert_a_suppression_name_here' output.log; then echo "Valgrind found problems"; exit 1; fi
