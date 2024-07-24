@@ -20,7 +20,7 @@ jobs:
         # TODO: arm64
         # latest and one version older for valgrind
         - nginx: "1.19.9"
-          openssl: "3.2.1"
+          openssl: "1.1.1w"
           valgrind: "valgrind"
           lua_nginx_module: "v0.10.21"
           lua_resty_core: "v0.1.23"
