@@ -19,21 +19,22 @@ jobs:
         include:
         # TODO: arm64
         # latest and one version older for valgrind
-        - nginx: "1.19.3"
-          openssl: "1.1.1n"
-          valgrind: "valgrind"
-          lua_nginx_module: "v0.10.19"
-          lua_resty_core: "v0.1.21"
         - nginx: "1.19.9"
-          openssl: "1.1.1n"
-          valgrind: "valgrind"
-          lua_nginx_module: "v0.10.20"
-          lua_resty_core: "v0.1.22"
-        - nginx: "1.21.4"
-          openssl: "1.1.1s"
+          openssl: "1.1.1w"
           valgrind: "valgrind"
           lua_nginx_module: "v0.10.21"
           lua_resty_core: "v0.1.23"
+        - nginx: "1.21.4"
+          openssl: "3.2.1"
+          valgrind: "valgrind"
+          lua_nginx_module: "v0.10.21"
+          lua_resty_core: "v0.1.23"
+        - nginx: "1.25.3"
+          openssl: "3.2.1"
+          valgrind: "valgrind"
+          lua_nginx_module: "v0.10.26"
+          stream_lua_nginx_module: "v0.0.14"
+          lua_resty_core: "v0.1.28"
 
     env:
       JOBS: 1 # must be 1 as LMDB tests interfere with each other
@@ -96,7 +97,7 @@ jobs:
     - name: Build OpenSSL
       run: |
         if [ "X$OPENSSL_HASH" != "X" ]; then wget https://github.com/openssl/openssl/archive/$OPENSSL_HASH.tar.gz -O - | tar zxf ; pushd openssl-$OPENSSL_HASH/; fi
-        if [ "X$OPENSSL_HASH" = "X" ] ; then wget https://www.openssl.org/source/openssl-${{ matrix.openssl }}.tar.gz -O - | tar zxf -; pushd openssl-${{ matrix.openssl }}/; fi
+        if [ "X$OPENSSL_HASH" = "X" ] ; then wget https://github.com/openssl/openssl/releases/download/openssl-${{ matrix.openssl }}/openssl-${{ matrix.openssl }}.tar.gz -O - | tar zxf -; pushd openssl-${{ matrix.openssl }}/; fi
         if [ ! -e $OPENSSL_PREFIX/include ]; then ./config shared -d --prefix=$OPENSSL_PREFIX -DPURIFY > build.log 2>&1 || (cat build.log && exit 1); fi
         if [ ! -e $OPENSSL_PREFIX/include ]; then make -j$JOBS > build.log 2>&1 || (cat build.log && exit 1); fi
         if [ ! -e $OPENSSL_PREFIX/include ]; then sudo make PATH=$PATH install_sw > build.log 2>&1 || (cat build.log && exit 1); fi
