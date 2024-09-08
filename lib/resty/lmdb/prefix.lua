@@ -26,9 +26,13 @@ local get_string_buf_size = base.get_string_buf_size
 local assert = assert
 
 
-function _M.page(start, prefix, db)
+function _M.page(start, prefix, db, page_size)
+    if not page_size then
+        page_size = DEFAULT_OPS_SIZE
+    end
+
     local value_buf_size = get_string_buf_size()
-    local ops = ffi_new("ngx_lua_resty_lmdb_operation_t[?]", DEFAULT_OPS_SIZE)
+    local ops = ffi_new("ngx_lua_resty_lmdb_operation_t[?]", page_size)
 
     ops[0].opcode = C.NGX_LMDB_OP_PREFIX
     ops[0].key.data = start
@@ -50,7 +54,7 @@ function _M.page(start, prefix, db)
 
 ::again::
     local buf = get_string_buf(value_buf_size, false)
-    local ret = C.ngx_lua_resty_lmdb_ffi_prefix(ops, DEFAULT_OPS_SIZE,
+    local ret = C.ngx_lua_resty_lmdb_ffi_prefix(ops, page_size,
                     buf, value_buf_size, err_ptr)
     if ret == NGX_ERROR then
         return nil, ffi_string(err_ptr[0])
@@ -83,8 +87,8 @@ function _M.page(start, prefix, db)
         res[i] = pair
     end
 
-    -- if ret == DEFAULT_OPS_SIZE, then it is possible there are more keys
-    return res, ret == DEFAULT_OPS_SIZE
+    -- if ret == page_size, then it is possible there are more keys
+    return res, ret == page_size
 end
 
 
