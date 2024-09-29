@@ -214,3 +214,142 @@ done
 [error]
 [warn]
 [crit]
+
+
+
+=== TEST 6: prefix.page() operation
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            ngx.say(l.db_drop(true))
+            ngx.say(l.set("test", "value"))
+            ngx.say(l.set("test1", "value1"))
+            ngx.say(l.set("test2", "value2"))
+            ngx.say(l.set("test3", "value3"))
+            ngx.say(l.set("u", "value4"))
+            ngx.say(l.set("u1", "value5"))
+
+            local p = require("resty.lmdb.prefix")
+
+            local res, err = p.page("test", "test")
+            if not res then
+                ngx.say("page errored: ", err)
+            end
+
+            for _, pair in ipairs(res) do
+                ngx.say("key: ", pair.key, " value: ", pair.value)
+            end
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+true
+true
+true
+true
+true
+true
+key: test value: value
+key: test1 value: value1
+key: test2 value: value2
+key: test3 value: value3
+--- no_error_log
+[error]
+[warn]
+[crit]
+
+
+
+=== TEST 7: prefix.page() operation with custom page size
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            ngx.say(l.db_drop(true))
+            ngx.say(l.set("test", "value"))
+            ngx.say(l.set("test1", "value1"))
+            ngx.say(l.set("test2", "value2"))
+            ngx.say(l.set("test3", "value3"))
+            ngx.say(l.set("u", "value4"))
+            ngx.say(l.set("u1", "value5"))
+
+            local p = require("resty.lmdb.prefix")
+
+            local res, err = p.page("test", "test", nil, 2)
+            if not res then
+                ngx.say("page errored: ", err)
+            end
+
+            ngx.say("FIRST PAGE")
+            for _, pair in ipairs(res) do
+                ngx.say("key: ", pair.key, " value: ", pair.value)
+            end
+
+            res, err = p.page("test1\x00", "test", nil, 2)
+            if not res then
+                ngx.say("page errored: ", err)
+            end
+
+            ngx.say("SECOND PAGE")
+            for _, pair in ipairs(res) do
+                ngx.say("key: ", pair.key, " value: ", pair.value)
+            end
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+true
+true
+true
+true
+true
+true
+FIRST PAGE
+key: test value: value
+key: test1 value: value1
+SECOND PAGE
+key: test2 value: value2
+key: test3 value: value3
+--- no_error_log
+[error]
+[warn]
+[crit]
+
+
+
+=== TEST 8: prefix.page() operation with invalid page size
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            ngx.say(l.db_drop(true))
+            local p = require("resty.lmdb.prefix")
+
+            ngx.say(l.set("test", "value"))
+            ngx.say(pcall(p.page, "test", "test", nil, 1))
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+true
+false.../lua-resty-lmdb/lua-resty-lmdb/lib/resty/lmdb/prefix.lua:34: 'page_size' can not be less than 2
+--- no_error_log
+[error]
+[warn]
+[crit]

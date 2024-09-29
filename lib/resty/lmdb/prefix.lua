@@ -31,6 +31,8 @@ function _M.page(start, prefix, db, page_size)
         page_size = DEFAULT_OPS_SIZE
     end
 
+    assert(page_size >= 2, "'page_size' can not be less than 2")
+
     local value_buf_size = get_string_buf_size()
     local ops = ffi_new("ngx_lua_resty_lmdb_operation_t[?]", page_size)
 

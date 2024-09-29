@@ -234,6 +234,9 @@ from the `txn` table when `commit()` returned an error is undefined.
 Return all keys `>= start` and starts with `prefix`. If `db` is omitted,
 it defaults to `"_default"`.
 
+If `page_size` is specified, up to `page_size` results will be returned. However,
+`page_size` can not be set to less than `2` due to internal implementation limitations.
+
 The return value of this function is a table `res` where `res[1].key` and `res[1].value`
 corresponds to the first key and value, `res[2].key` and `res[2].value` corresponds to the
 second and etc. If no keys matched the provided criteria, then an empty table will be
@@ -245,6 +248,9 @@ might return an empty list. If this value is `false`, then it is guaranteed no m
 matching the `prefix` is available.
 
 In case of errors, `nil` and an string describing the reason of the failure will be returned.
+
+This is a low level function, most of the use case should instead use the higher level
+[lmdb.prefix](#prefix) iterator instead.
 
 [Back to TOC](#table-of-contents)
 
