@@ -249,7 +249,7 @@ matching the `prefix` is available.
 
 In case of errors, `nil` and an string describing the reason of the failure will be returned.
 
-This is a low level function, most of the use case should instead use the higher level
+This is a low level function, most of the use case should use the higher level
 [lmdb.prefix](#prefix) iterator instead.
 
 [Back to TOC](#table-of-contents)
