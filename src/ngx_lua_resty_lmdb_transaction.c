@@ -148,7 +148,8 @@ int ngx_lua_resty_lmdb_ffi_execute(ngx_lua_resty_lmdb_operation_t *ops,
         rc = mdb_txn_commit(txn);
         if (rc != 0) {
             *err = mdb_strerror(rc);
-            goto err;
+
+            return NGX_ERROR;
         }
 
     } else {
