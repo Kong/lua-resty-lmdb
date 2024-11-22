@@ -226,7 +226,7 @@ ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
     int                        rc;
     int                        dead;
     size_t                     readers;
-    ngx_core_conf_t            *ccf;
+    ngx_core_conf_t           *ccf;
 
     if (ngx_lua_resty_lmdb_create_env(cycle, lcf, is_master) != NGX_OK) {
         return NGX_ERROR;
@@ -234,10 +234,11 @@ ngx_lua_resty_lmdb_open_file(ngx_cycle_t *cycle,
 
     /* Set max readers depending on the number of worker processes */
     ccf = (ngx_core_conf_t *) ngx_get_conf(cycle->conf_ctx, ngx_core_module);
-    readers = (size_t)ccf->worker_processes;
-    readers += NGX_LUA_RESTY_LMDB_MAX_READERS_REDUNDANCY;
-    readers = readers > NGX_LUA_RESTY_LMDB_DEFAULT_READERS ?
-              readers : NGX_LUA_RESTY_LMDB_DEFAULT_READERS;
+    readers = (size_t) ccf->worker_processes + NGX_LUA_RESTY_LMDB_MAX_READERS_REDUNDANCY;
+    if (readers < NGX_LUA_RESTY_LMDB_DEFAULT_READERS) {
+      readers = NGX_LUA_RESTY_LMDB_DEFAULT_READERS;
+    }
+
     rc = mdb_env_set_maxreaders(lcf->env, readers);
     if (rc != 0) {
         ngx_log_error(NGX_LOG_CRIT, cycle->log, 0,
