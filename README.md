@@ -234,8 +234,8 @@ from the `txn` table when `commit()` returned an error is undefined.
 Return all keys `>= start` and starts with `prefix`. If `db` is omitted,
 it defaults to `"_default"`.
 
-If `page_size` is specified, up to `page_size` results will be returned. However,
-`page_size` can not be set to less than `2` due to internal implementation limitations.
+If `page_size` is specified, up to `page_size` results will be returned. The `page_size`
+cannot be smaller than 1.
 
 The return value of this function is a table `res` where `res[1].key` and `res[1].value`
 corresponds to the first key and value, `res[2].key` and `res[2].value` corresponds to the

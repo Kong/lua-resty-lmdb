@@ -328,7 +328,7 @@ key: test3 value: value3
 
 
 
-=== TEST 8: prefix.page() operation with invalid page size
+=== TEST 8: prefix.page() operation with page size 1
 --- http_config eval: $::HttpConfig
 --- main_config eval: $::MainConfig
 --- config
@@ -336,19 +336,49 @@ key: test3 value: value3
         content_by_lua_block {
             local l = require("resty.lmdb")
 
-            ngx.say(l.db_drop(true))
-            local p = require("resty.lmdb.prefix")
+            l.db_drop(true)
+            l.set("test", "value")
+            l.set("test1", "value1")
+            l.set("test2", "value2")
+            l.set("test3", "value3")
+            l.set("u", "value4")
+            l.set("u1", "value5")
 
-            ngx.say(l.set("test", "value"))
-            ngx.say(pcall(p.page, "test", "test", nil, 1))
+            local p = require("resty.lmdb.prefix")    
+
+            ngx.say("PAGE SIZE 1")
+            local res, more = assert(p.page("test", "test", nil, 1))
+
+            assert(#res == 1)
+            ngx.say(res[1].key, " ", res[1].value)
+            assert(more)
+
+            ngx.say("PAGE SIZE 2")
+            res, more = p.page("test", "test", nil, 2)
+            assert(more)
+
+            assert(#res == 2)
+            for _, pair in ipairs(res) do
+                ngx.say(pair.key, " ", pair.value)
+            end
+
+            ngx.say("PAGE SIZE 0")
+            local ok, err = pcall(p.page, "test", "test", nil, 0)
+            if not ok then
+                ngx.say(err)
+            end
         }
     }
 --- request
 GET /t
 --- response_body
-true
-true
-false.../lua-resty-lmdb/lua-resty-lmdb/lib/resty/lmdb/prefix.lua:34: 'page_size' can not be less than 2
+PAGE SIZE 1
+test value
+PAGE SIZE 2
+test value
+test1 value1
+PAGE SIZE 0
+.../lua-resty-lmdb/lua-resty-lmdb/lib/resty/lmdb/prefix.lua:34: page_size must be at least 1
 --- no_error_log
 [error]
 [warn]
