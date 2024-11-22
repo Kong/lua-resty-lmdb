@@ -353,3 +353,78 @@ false.../lua-resty-lmdb/lua-resty-lmdb/lib/resty/lmdb/prefix.lua:34: 'page_size'
 [error]
 [warn]
 [crit]
+
+
+
+=== TEST 9: prefix.page() operation with large page size [KAG-5874]
+--- http_config eval: $::HttpConfig
+--- main_config eval: $::MainConfig
+--- config
+    location = /t {
+        content_by_lua_block {
+            local l = require("resty.lmdb")
+
+            ngx.say(l.db_drop(true))
+
+            ngx.say(l.set("test", "value"))
+
+            local inserted = { test = "value" }
+
+            for i = 1, 2048 do
+                -- string.rep with 120 makes sure each page goes just over the 1MB
+                -- default buffer size and triggers a realloc
+                assert(l.set(string.rep("test", 120) .. i, string.rep("value", 120)))
+                inserted[string.rep("test", 120) .. i] = string.rep("value", 120)
+            end
+
+            ngx.say(l.set("u", "value4"))
+            ngx.say(l.set("u1", "value5"))
+
+            local p = require("resty.lmdb.prefix")
+
+            local res, err = p.page("test", "test", nil, 1000)
+            if not res then
+                ngx.say("page errored: ", err)
+            end
+
+            ngx.say("FIRST PAGE")
+            for _, pair in ipairs(res) do
+                inserted[pair.key] = nil
+            end
+
+            res, err = p.page(res[#res].key .. "\x00", "test", nil, 1000)
+            if not res then
+                ngx.say("page errored: ", err)
+            end
+            ngx.say("SECOND PAGE")
+            for _, pair in ipairs(res) do
+                inserted[pair.key] = nil
+            end
+
+            res, err = p.page(res[#res].key .. "\x00", "test", nil, 1000)
+            if not res then
+                ngx.say("page errored: ", err)
+            end
+            ngx.say("THIRD PAGE")
+            for _, pair in ipairs(res) do
+                inserted[pair.key] = nil
+            end
+
+            ngx.say(next(inserted))
+        }
+    }
+--- request
+GET /t
+--- response_body
+true
+true
+true
+true
+FIRST PAGE
+SECOND PAGE
+THIRD PAGE
+nil
+--- no_error_log
+[error]
+[warn]
+[crit]

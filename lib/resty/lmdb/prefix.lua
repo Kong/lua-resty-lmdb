@@ -36,14 +36,6 @@ function _M.page(start, prefix, db, page_size)
     local value_buf_size = get_string_buf_size()
     local ops = ffi_new("ngx_lua_resty_lmdb_operation_t[?]", page_size)
 
-    ops[0].opcode = C.NGX_LMDB_OP_PREFIX
-    ops[0].key.data = start
-    ops[0].key.len = #start
-
-    ops[1].opcode = C.NGX_LMDB_OP_PREFIX
-    ops[1].key.data = prefix
-    ops[1].key.len = #prefix
-
     local dbi, err = get_dbi(false, db or DEFAULT_DB)
     if err then
         return nil, "unable to open DB for access: " .. err
@@ -55,6 +47,14 @@ function _M.page(start, prefix, db, page_size)
     ops[0].dbi = dbi
 
 ::again::
+    ops[0].opcode = C.NGX_LMDB_OP_PREFIX
+    ops[0].key.data = start
+    ops[0].key.len = #start
+
+    ops[1].opcode = C.NGX_LMDB_OP_PREFIX
+    ops[1].key.data = prefix
+    ops[1].key.len = #prefix
+
     local buf = get_string_buf(value_buf_size, false)
     local ret = C.ngx_lua_resty_lmdb_ffi_prefix(ops, page_size,
                     buf, value_buf_size, err_ptr)
