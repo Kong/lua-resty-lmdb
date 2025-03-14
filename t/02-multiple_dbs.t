@@ -140,7 +140,7 @@ GET /t
 true
 true
 true
-nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
+nilunable to open DB for GET 'test': MDB_NOTFOUND: No matching key/data pair found
 value
 --- no_error_log
 [error]
