@@ -89,7 +89,7 @@ nil
 --- request
 GET /t
 --- response_body
-nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
+nilunable to open DB for GET 'test': MDB_NOTFOUND: No matching key/data pair found
 true
 value
 nil
@@ -122,7 +122,7 @@ set LMDB validation tag: "3.3"
 --- request
 GET /t
 --- response_body
-nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
+nilunable to open DB for GET 'test': MDB_NOTFOUND: No matching key/data pair found
 true
 value
 nil

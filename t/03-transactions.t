@@ -131,7 +131,7 @@ value
 GET /t
 --- response_body
 true
-nilunable to open DB for access: MDB_NOTFOUND: No matching key/data pair found
+nilunable to open DB for GET 'test': MDB_NOTFOUND: No matching key/data pair found
 nil
 --- no_error_log
 [error]
