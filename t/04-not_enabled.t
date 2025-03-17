@@ -34,8 +34,8 @@ __DATA__
 --- request
 GET /t
 --- response_body
-nilunable to open DB for access: no LMDB environment defined
-nilunable to open DB for access: no LMDB environment defined
+nilunable to open DB for DROP: no LMDB environment defined
+nilunable to open DB for GET 'test': no LMDB environment defined
 --- no_error_log
 [error]
 [warn]

@@ -179,7 +179,7 @@ function _TXN_MT:commit()
         if lop.opcode == "GET" then
             local dbi, err = get_dbi(false, lop.db)
             if err then
-                return nil, "unable to open DB for access: " .. err
+                return nil, "unable to open DB for GET '" .. lop.key .. "': " .. err
 
             elseif not dbi then
                 return nil, "DB " .. lop.db .. " does not exist"
@@ -193,7 +193,7 @@ function _TXN_MT:commit()
         elseif lop.opcode == "SET" then
             local dbi, err = get_dbi(true, lop.db)
             if err then
-                return nil, "unable to open DB for access: " .. err
+                return nil, "unable to open DB for SET '" .. lop.key .. "': " .. err
 
             elseif not dbi then
                 return nil, "DB " .. lop.db .. " does not exist"
@@ -223,7 +223,7 @@ function _TXN_MT:commit()
         elseif lop.opcode == "DB_DROP" then
             local dbi, err = get_dbi(false, lop.db)
             if err then
-                return nil, "unable to open DB for access: " .. err
+                return nil, "unable to open DB for DROP: " .. err
 
             elseif not dbi then
                 return nil, "DB " .. lop.db .. " does not exist"
