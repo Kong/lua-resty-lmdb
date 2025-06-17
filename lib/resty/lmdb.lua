@@ -26,9 +26,9 @@ local CAN_YIELD_PHASES = {
 }
 
 
-function _M.get(key, db)
+function _M.get(key, db, keep_prefix)
     CACHED_TXN:reset()
-    CACHED_TXN:get(key, db)
+    CACHED_TXN:get(key, db, keep_prefix)
     local res, err = CACHED_TXN:commit()
     if not res then
         return nil, err
@@ -38,9 +38,9 @@ function _M.get(key, db)
 end
 
 
-function _M.set(key, value, db)
+function _M.set(key, value, db, keep_prefix)
     CACHED_TXN:reset()
-    CACHED_TXN:set(key, value, db)
+    CACHED_TXN:set(key, value, db, keep_prefix)
     local res, err = CACHED_TXN:commit()
     if not res then
         return nil, err

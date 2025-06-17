@@ -37,7 +37,7 @@ interacting with the module to access/change data.
 
 #### get
 
-**syntax:** *value, err = lmdb.get(key, db?)*
+**syntax:** *value, err = lmdb.get(key, db?, keep_prefix?)*
 
 **context:** *any context **except** init_by_lua&#42;*
 
@@ -46,13 +46,15 @@ it defaults to `"_default"`.
 
 If the key does not exist, `nil` will be returned.
 
+The `keep_prefix` preserves the first 479 bytes of keys longer than 479 bytes, appending the SHA-256 hash to maintain prefix search capability with `lmdb.prefix()` while complying with LMDB's 511-byte key size limit. This transformation occurs specifically when keys exceed 479 bytes. If off, when the key exceeds LMDB's 511-byte key size limit, the entire key is automatically hashed with sha-256 and used as the actual key.
+
 In case of error, `nil` and a string describing the error will be returned instead.
 
 [Back to TOC](#table-of-contents)
 
 #### set
 
-**syntax:** *ok, err = lmdb.set(key, value, db?)*
+**syntax:** *ok, err = lmdb.set(key, value, db?, keep_prefix?)*
 
 **context:** *any context **except** init_by_lua&#42;*
 
@@ -60,6 +62,8 @@ Sets the value corresponding to `key` to `value` inside LMDB database `db`. If `
 it defaults to `"_default"`.
 
 Setting a key's value to `nil` will remove that key from the corresponding database.
+
+The `keep_prefix` preserves the first 479 bytes of keys longer than 479 bytes, appending the SHA-256 hash to maintain prefix search capability with `lmdb.prefix()` while complying with LMDB's 511-byte key size limit. This transformation occurs specifically when keys exceed 479 bytes. If off, when the key exceeds LMDB's 511-byte key size limit, the entire key is automatically hashed with sha-256 and used as the actual key.
 
 In case of error, `nil` and a string describing the error will be returned instead.
 
