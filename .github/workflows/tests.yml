@@ -12,7 +12,7 @@ concurrency:
 jobs:
   tests:
     name: Tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       matrix:
@@ -62,7 +62,7 @@ jobs:
         submodules: 'true'
 
     - name: Setup cache
-      uses: actions/cache@v2
+      uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf  # v4.2.2
       with:
         path: |
           /home/runner/work/cache
