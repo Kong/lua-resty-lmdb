@@ -305,11 +305,10 @@ When this directive is not set, tag validation is disabled.
 
 ## Copyright and license
 
-Copyright (c) 2021-2022 Kong, Inc.
+Copyright (c) 2021-2026 Kong, Inc.
 
 Licensed under the Apache License, Version 2.0 <LICENSE or
 [https://www.apache.org/licenses/LICENSE-2.0](https://www.apache.org/licenses/LICENSE-2.0)>.
 Files in the project may not be copied, modified, or distributed except according to those terms.
 
 [Back to TOC](#table-of-contents)
-

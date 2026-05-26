@@ -1,9 +1,7 @@
 [submodule "lmdb"]
   path = lmdb
-  url = https://github.com/LMDB/lmdb
-  # This worked on the previous repo, https://git.openldap.org/openldap/openldap :
-  # branch = LMDB_0.9.33
-  # The new repo, https://github.com/LMDB/lmdb, is a mirror with the same commits, but not the same branches
-  # The 9.33 release is still at the same commit (3a29a24777c82a0165de813ae696a5068b5add30)
-  # See https://github.com/LMDB/lmdb/commit/3a29a24777c82a0165de813ae696a5068b5add30
-
+  url = https://github.com/openldap/openldap.git
+  branch = LMDB_0.9.35
+  # This used to work, but has been offline since:
+  # url = https://git.openldap.org/openldap/openldap
+  # branch = LMDB_0.9.35
