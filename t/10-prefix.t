@@ -400,12 +400,16 @@ PAGE SIZE 0
 
             local inserted = { test = "value" }
 
+            -- batch all inserts in one transaction to avoid per-write overhead
+            -- string.rep with 120 makes sure each page goes just over the 1MB
+            -- default buffer size and triggers a realloc
+            local txn = require("resty.lmdb.transaction")
+            local batch = txn.begin(2048)
             for i = 1, 2048 do
-                -- string.rep with 120 makes sure each page goes just over the 1MB
-                -- default buffer size and triggers a realloc
-                assert(l.set(string.rep("test", 120) .. i, string.rep("value", 120)))
+                batch:set(string.rep("test", 120) .. i, string.rep("value", 120))
                 inserted[string.rep("test", 120) .. i] = string.rep("value", 120)
             end
+            assert(batch:commit())
 
             ngx.say(l.set("u", "value4"))
             ngx.say(l.set("u1", "value5"))
