@@ -22,7 +22,7 @@ static void *ngx_lua_resty_lmdb_create_conf(ngx_cycle_t *cycle);
 static char *ngx_lua_resty_lmdb_init_conf(ngx_cycle_t *cycle, void *conf);
 static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle);
 static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle);
-static void ngx_lua_resty_lmdb_exit_worker(ngx_cycle_t *cycle);
+static void ngx_lua_resty_lmdb_cleanup_worker(void *data);
 
 
 static ngx_command_t  ngx_lua_resty_lmdb_commands[] = {
@@ -76,7 +76,7 @@ ngx_module_t  ngx_lua_resty_lmdb_module = {
     ngx_lua_resty_lmdb_init_worker,        /* init process */
     NULL,                                  /* init thread */
     NULL,                                  /* exit thread */
-    ngx_lua_resty_lmdb_exit_worker,        /* exit process */
+    NULL,                                  /* exit process */
     NULL,                                  /* exit master */
     NGX_MODULE_V1_PADDING
 };
@@ -607,6 +607,7 @@ static ngx_int_t ngx_lua_resty_lmdb_init(ngx_cycle_t *cycle)
 static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
 {
     ngx_lua_resty_lmdb_conf_t *lcf;
+    ngx_pool_cleanup_t         *cln;
 
     lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
                                                      ngx_lua_resty_lmdb_module);
@@ -614,6 +615,14 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
     if (lcf == NULL || lcf->env_path == NULL) {
         return NGX_OK;
     }
+
+    cln = ngx_pool_cleanup_add(cycle->pool, 0);
+    if (cln == NULL) {
+        return NGX_ERROR;
+    }
+
+    cln->handler = ngx_lua_resty_lmdb_cleanup_worker;
+    cln->data = lcf;
 
     if (ngx_lua_resty_lmdb_open_file(cycle, lcf, 0) != NGX_OK) {
         return NGX_ERROR;
@@ -623,20 +632,20 @@ static ngx_int_t ngx_lua_resty_lmdb_init_worker(ngx_cycle_t *cycle)
 }
 
 
-static void ngx_lua_resty_lmdb_exit_worker(ngx_cycle_t *cycle)
+static void ngx_lua_resty_lmdb_cleanup_worker(void *data)
 {
     ngx_lua_resty_lmdb_conf_t *lcf;
 
-    lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(cycle->conf_ctx,
-                                                     ngx_lua_resty_lmdb_module);
+    lcf = data;
 
-    if (lcf == NULL || lcf->env_path == NULL) {
+    if (lcf->env == NULL) {
         return;
     }
 
-    if (lcf->env != NULL) {
-        ngx_lua_resty_lmdb_close_file(cycle, lcf);
-    }
-}
+    mdb_txn_abort(lcf->ro_txn);
+    mdb_env_close(lcf->env);
 
+    lcf->ro_txn = NULL;
+    lcf->env = NULL;
+}
 
