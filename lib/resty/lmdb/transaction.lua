@@ -12,6 +12,7 @@ local get_string_buf = base.get_string_buf
 local get_string_buf_size = base.get_string_buf_size
 local setmetatable = setmetatable
 local assert = assert
+local string_sub = string.sub
 local math_max = math.max
 local type = type
 local C = ffi.C
@@ -51,6 +52,8 @@ do
 
     -- lmdb has 511 bytes limitation for key
     local MAX_KEY_SIZE = 511
+    -- when keep prefix, the key size is limited to 479 bytes
+    local MAX_KEY_SIZE_WHEN_KEEP_PREFIX = 511 - 32 -- it is 479
 
     local sha256 = function(str)
         resty_sha256:reset()
@@ -58,9 +61,17 @@ do
         return resty_sha256:final()
     end
 
-    normalize_key = function(key)
-        if key and #key > MAX_KEY_SIZE then
-            return assert(sha256(key))
+    normalize_key = function(key, keep_prefix)
+        if key then
+            local key_len = #key
+            if keep_prefix and key_len > MAX_KEY_SIZE_WHEN_KEEP_PREFIX then
+                local prefix = string_sub(key, 1, MAX_KEY_SIZE_WHEN_KEEP_PREFIX)
+                return prefix .. assert(sha256(key))
+            end
+
+            if key_len > MAX_KEY_SIZE then
+                return assert(sha256(key))
+            end
         end
 
         return key
@@ -114,18 +125,18 @@ function _TXN_MT:_new_op()
 end
 
 
-function _TXN_MT:get(key, db)
+function _TXN_MT:get(key, db, keep_prefix)
     local op = self:_new_op()
     op.opcode = "GET"
-    op.key = normalize_key(key)
+    op.key = normalize_key(key, keep_prefix)
     op.db = db or DEFAULT_DB
 end
 
 
-function _TXN_MT:set(key, value, db)
+function _TXN_MT:set(key, value, db, keep_prefix)
     local op = self:_new_op()
     op.opcode = "SET"
-    op.key = normalize_key(key)
+    op.key = normalize_key(key, keep_prefix)
     op.value = value
     op.db = db or DEFAULT_DB
     op.flags = 0
