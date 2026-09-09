@@ -1,7 +1,7 @@
 [submodule "lmdb"]
   path = lmdb
   url = https://github.com/openldap/openldap.git
-  branch = LMDB_1.0.1
+  branch = LMDB_1.0.2
   # This used to work, but has been offline since:
   # url = https://git.openldap.org/openldap/openldap
-  # branch = LMDB_1.0.1
+  # branch = LMDB_1.0.2
