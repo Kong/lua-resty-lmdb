@@ -37,3 +37,19 @@ int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_status_t *lst,
 
     return NGX_OK;
 }
+
+
+int ngx_lua_resty_lmdb_ffi_max_key_size(const char **err)
+{
+    ngx_lua_resty_lmdb_conf_t      *lcf;
+
+    lcf = (ngx_lua_resty_lmdb_conf_t *) ngx_get_conf(ngx_cycle->conf_ctx,
+                                                     ngx_lua_resty_lmdb_module);
+
+    if (lcf == NULL || lcf->env == NULL) {
+        *err = "no LMDB environment defined";
+        return NGX_ERROR;
+    }
+
+    return mdb_env_get_maxkeysize(lcf->env);
+}

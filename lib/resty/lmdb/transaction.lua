@@ -49,8 +49,11 @@ local normalize_key
 do
     local resty_sha256 = assert(require("resty.sha256").new())
 
-    -- lmdb has 511 bytes limitation for key
-    local MAX_KEY_SIZE = 511
+    -- lmdb's actual max key size is only known after the environment has
+    -- been opened (mdb_env_get_maxkeysize() requires mdb_env_open() to have
+    -- completed), so it is looked up lazily and cached on first use.
+    local DEFAULT_MAX_KEY_SIZE = 511
+    local max_key_size
 
     local sha256 = function(str)
         resty_sha256:reset()
@@ -59,7 +62,14 @@ do
     end
 
     normalize_key = function(key)
-        if key and #key > MAX_KEY_SIZE then
+        assert(type(key) == "string", "invalid key")
+
+        if not max_key_size then
+            local size = C.ngx_lua_resty_lmdb_ffi_max_key_size(err_ptr)
+            max_key_size = size > 0 and size or DEFAULT_MAX_KEY_SIZE
+        end
+
+        if #key > max_key_size then
             return assert(sha256(key))
         end
 

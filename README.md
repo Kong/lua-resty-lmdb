@@ -29,6 +29,8 @@ interacting with the module to access/change data.
         * [lmdb_max_databases](#lmdb_max_databases)
         * [lmdb_map_size](#lmdb_map_size)
         * [lmdb_validation_tag](#lmdb_validation_tag)
+        * [lmdb_encryption_key](#lmdb_encryption_key)
+        * [lmdb_encryption_mode](#lmdb_encryption_mode)
     * [Copyright and license](#copyright-and-license)
 
 ## APIs
@@ -300,6 +302,29 @@ if the value is different from the directive value,
 the content of LMDB will be cleaned up.
 
 When this directive is not set, tag validation is disabled.
+
+[Back to TOC](#table-of-contents)
+
+### lmdb_encryption_key
+
+**syntax:** *lmdb_encryption_key path/to/keyfile;*
+
+**context:** *main*
+
+Encrypt the lmdb database. Encryption is enabled only when the `lmdb_encryption_key` is set. The
+content of keyfile will be used to derive a key to encrypt lmdb.
+
+[Back to TOC](#table-of-contents)
+
+### lmdb_encryption_mode
+
+**syntax:** *lmdb_encryption_mode "aes-256-gcm";*
+
+**context:** *main*
+
+Set the lmdb database encryption mode. The default encryption mode is "aes-256-gcm". The optional encryption
+modes are "chacha20-poly1305" and "aes-256-gcm". Note that `lmdb_encryption_mode` needs to be set only when
+`lmdb_encryption_key` is set.
 
 [Back to TOC](#table-of-contents)
 
