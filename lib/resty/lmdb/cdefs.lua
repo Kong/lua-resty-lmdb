@@ -38,6 +38,7 @@ typedef struct {
 } ngx_lua_resty_lmdb_ffi_status_t;
 
 int ngx_lua_resty_lmdb_ffi_env_info(ngx_lua_resty_lmdb_ffi_status_t *lst, char **err);
+int ngx_lua_resty_lmdb_ffi_max_key_size(char **err);
 
 
 int ngx_lua_resty_lmdb_ffi_execute(ngx_lua_resty_lmdb_operation_t *ops,
