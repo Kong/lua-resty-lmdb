@@ -5,6 +5,7 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 #include <lmdb.h>
+#include <openssl/evp.h>
 
 
 struct ngx_lua_resty_lmdb_conf_s {
@@ -15,6 +16,19 @@ struct ngx_lua_resty_lmdb_conf_s {
     MDB_txn     *ro_txn;
 
     ngx_str_t    validation_tag;
+
+    ngx_str_t    key_file;
+    ngx_str_t    encryption_mode;
+
+    const EVP_CIPHER  *cipher;
+
+    /*
+     * SHA-256 digest of the lmdb_encryption_key file contents, derived once
+     * in ngx_lua_resty_lmdb_init_conf() and reused by every later
+     * mdb_env_set_encrypt() call (master re-opens, and every worker after
+     * fork), so the raw key file contents never need to be kept around.
+     */
+    u_char       enc_key[32];
 };
 
 
